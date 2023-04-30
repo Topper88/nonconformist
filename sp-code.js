@@ -1,5 +1,6 @@
 export function spCode() {
   return `
-      box(vec3(1.5));
+      let size = input();
+      box(vec3(size));
   `;
 }
