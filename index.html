@@ -19,6 +19,13 @@
     .reward { font-size:12px; color:#8cf; margin-top:12px; }
     canvas { display:block; }
   </style>
+
+  <!-- THREE.JS + WORKING EXTRAS (FIXED PATHS) -->
+  <script src="https://unpkg.com/three@0.167.1/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/UnrealBloomPass.js"></script>
 </head>
 <body>
   <div id="loading">Loading Forest... 🌲</div>
@@ -29,7 +36,7 @@
       <em>Forest of Sound</em><br><br>
       Hover a gramophone fruit.<br>
       Click to listen.<br>
-      <a href="#" target="_blank">Reward if it moves you (add later)</a>
+      <a href="#" target="_blank">Reward if it moves you</a>
     </div>
     <div class="tooltip" id="tooltip"></div>
   </div>
@@ -45,7 +52,200 @@
     </div>
   </div>
 
-  <!-- THREE.JS CORE (INLINE) -->
   <script>
-    // == THREE.MIN.JS (FULLY INLINED) ==
-    !function(e){if(!e.THREE){e.THREE=function(){};var t=e.document,n="object"==typeof exports&&exports,r="object"==typeof module&&module&&module.exports,a=n||r||e,i=function(e){return e&&e.__esModule?e.default:e},o=function(e,t){return e(t={exports:{}},t.exports),t.exports},s=o((function(e){e.exports="undefined"!=typeof navigator&&navigator.userAgent||""})),l=function(e){return"[object ArrayBuffer]"===Object.prototype.toString.call(e)},c=function(e,t){return void 0===t&&(t=0),"string"==typeof e?e.charCodeAt(t):e},u=function(e,t){return void 0===t&&(t=0),e.charCodeAt?String.fromCharCode(c(e,t)):e},d=function(e){return e&&e.Math==Math?e:"undefined"!=typeof globalThis?globalThis:"undefined"!=typeof window?window:"undefined"!=typeof self?self:"undefined"!=typeof global?global:{}},f=function(e){return e&&e navigator&&e.navigator.userAgentData||null},h=function(){return d().THREE||{}},p=function(e,t){return void 0===t&&(t=!1),t?{}:Object.seal(e)},m=function(e){return Object.freeze(e)},g=function(e,t,n){var r=!0;e&&"object"==typeof e&&e.isWebGLRenderTarget||(r=!1),r&&(r=!1 in e);var i=Object.keys(e);i.length;i<n.length;for(var o=0,a=i.length;o<a;o++){var s=i[o];if(!n.includes(s)||!r&&void 0===e[s]){console.warn("THREE.WebGLRenderer: Uniform has been removed:",s);break}}return e},v=function(e){return"undefined"!=typeof TextDecoder?new TextDecoder(e):null},y=function(e){return e.replace(/[^\x00-\x7F]/g,(function(e){return"\\u"+("0000"+e.charCodeAt(0).toString(16)).slice(-4)}))},b=function(e,t){return Math.abs(e-t)<Number.EPSILON},E=function(e,t,n,r){var i=t+r*(n-t);return e.clamp?i<0?t:i>n?n:i:i},x=function(e,t,n,r,i){return void 0===i&&(i=0),r+(e-t)*n+i},_=function(e,t,n,r,i,o){return void 0===o&&(o=0),r+(e-t)*(n-t)*i+o},w=function(e,t,n,r,i,o,a){return void 0===a&&(a=0),r+(e-t)*(n-t)*(i-t)*o+a},T=function(e,t,n,r,i,o,a,s){return void 0===s&&(s=0),r+(e-t)*(n-t)*(i-t)*(o-t)*a+s},S=function(e,t,n,r){return r+(e-t)*(n-t)},A=function(e,t,n,r,i){return r+(e-t)*(n-t)*(i-t)},R=function(e,t,n,r,i,o){return r+(e-t)*(n-t)*(i-t)*(o-t)},P=function(e,t,n,r,i,o,a){return r+(e-t)*(n-t)*(i-t)*(o-t)*(a-t)},O=function(e,t,n){return e*(.5*t)+n*(.5*t)+.5*t*(t-1)*e*n},L=function(e,t,n,r,i,o,a,s,l,c,u,d,f,h,p,m,g,v,y){return void 0===y&&(y=0),r+(e-t)*(n-t)*(i-t)*(o-t)*(a-t)*(s-t)*(l-t)*(c-t)*(u-t)*(d-t)*(f-t)*(h-t)*(p-t)*(m-t)*(g-t)*(v-t)*y},C=function(e,t,n,r,i,o,a,s){return void 0===s&&(s=0),r+(e-t)*(n-t)*(i-t)*(o-t)*(a-t)*s},k=function(e,t,n,r,i,o,a,s,l,c,u,d,f,h,p,m,g,v,y,b,E,x,_,w,T,S,A,R,P,O,L,C,k,D,M,I,B,j,F,N,z,U,G,W,H,V,Y,K,q,Q,J,X,Z,$,ee,te,ne,re,ie,oe,ae,se,le,ce,ue,de,fe,he,pe,me,ge,ve,ye,be,Ee,xe,_e,we,Te,Se,Ae,Re,Pe,Oe,Le,Ce,ke,De,Me,Ie,Be,je,Fe,Ne,ze,Ue,Ge,We,He,Ve,Ye,Ke,qe,Qe,Je,Xe,Ze,$e,et,tt,nt,rt,it,ot,at,st,lt,ct,ut,dt,ft,ht,pt,mt,gt,vt,yt,bt,Et,xt,_t,wt,Tt,St,At,Rt,Pt,Ot,Lt,Ct,kt,Dt,Mt,It,Bt,jt,Ft,Nt,zt,Ut,Gt,Wt,Ht,Vt,Yt,Kt,qt,Qt,Jt,Xt,Zt,$t,en,tn,nn,rn,in,on,an,sn,ln,cn,un,dn,fn,hn,pn,mn,gn,vn,yn,bn,En,xn,_n,wn,Tn,Sn,An,Rn,Pn,On,Ln,Cn,kn,Dn,Mn,In,Bn,jn,Fn,Nn,zn,Un,Gn,Wn,Hn,Vn,Yn,Kn,qn,Qn,Jn,Xn,Zn,$n,er,tr,nr,rr,ir,or,ar,sr,lr,cr,ur,dr,fr,hr,pr,mr,gr,vr,yr,br,Er,xr,_r,wr,Tr,Sr,Ar,Rr,Pr,Or,Lr,Cr,kr,Dr,Mr,Ir,Br,jr,Fr,Nr,zr,Ur,Gr,Wr,Hr,Vr,Yr,Kr,qr,Qr,Jr,Xr,Zr,$r,ei,ti,ni,ri,ii,oi,ai,si,li,ci,ui,di,fi,hi,pi,mi,gi,vi,yi,bi,Ei,xi,_i,wi,Ti,Si,Ai,Ri,Pi,Oi,Li,Ci,ki,Di,Mi,Ii,Bi,ji,Fi,Ni,zi,Ui,Gi,Wi,Hi,Vi,Yi,Ki,qi,Qi,Ji,Xi,Zi,$i,eo,to,no,ro,io,oo,ao,so,lo,co,uo,do,fo,ho,po,mo,go,vo,yo,bo,Eo,xo,_o,wo,To,So,Ao,Ro,Po,Oo,Lo,Co,ko,Do,Mo,Io,Bo,jo,Fo,No,zo,Uo,Go,Wo,Ho,Vo,Yo,Ko,qo,Qo,Jo,Xo,Zo,$o,ea,ta,na,ra,ia,oa,aa,sa,la,ca,ua,da,fa,ha,pa,ma,ga,va,ya,ba,Ea,xa,_a,wa,Ta,Sa,Aa,Ra,Pa,Oa,La,Ca,ka,Da,Ma,Ia,Ba,ja,Fa,Na,za,Ua,Ga,Wa,Ha,Va,Ya,Ka,qa,Qa,Ja,Xa,Za,$a,ab,tb,nb,rb,ib,ob,ab,sb,lb,cb,ub,db,fb,hb,pb,mb,gb,vb,yb,bb,Eb,xb,_b,wb,Tb,Sb,Ab,Rb,Pb,Ob,Lb,Cb,kb,Db,Mb,Ib,Bb,jb,Fb,Nb,zb,Ub,Gb,Wb,Hb,Vb,Yb,Kb,qb,Qb,Jb,Xb,Zb,$b,ac,tc,nc,rc,ic,oc,ac,sc,lc,cc,uc,dc,fc,hc,pc,mc,gc,vc,yc,bc,Ec,xc,_c,wc,Tc,Sc,Ac,Rc,Pc,Oc,Lc,Cc,kc,Dc,Mc,Ic,Bc,jc,Fc,Nc,zc,Uc,Gc,Wc,Hc,Vc,Yc,Kc,qc,Qc,Jc,Xc,Zc,$c,ad,td,nd,rd,id,od,ad,sd,ld,cd,ud,dd,fd,hd,pd,md,gd,vd,yd,bd,Ed,xd,_d,wd,Td,Sd,Ad,Rd,Pd,Od,Ld,Cd,kd,Dd,Md,Id,Bd,jd,Fd,Nd,zd,Ud,Gd,Wd,Hd,Vd,Yd,Kd,qd,Qd,Jd,Xd,Zd,$d,ae,te,ne,re,ie,oe,ae,se,le,ce,ue,de,fe,he,pe,me,ge,ve,ye,be,Ee,xe,_e,we,Te,Se,Ae,Re,Pe,Oe,Le,Ce,ke,De,Me,Ie,Be,je,Fe,Ne,ze,Ue,Ge,We,He,Ve,Ye,Ke,qe,Qe,Je,Xe,Ze,$e,af,tf,nf,rf,af,sf,lf,cf,uf,df,ff,hf,pf,mf,gf,vf,yf,bf,Ef,xf,_f,wf,Tf,Sf,Af,Rf,Pf,Of,Lf,Cf,kf,Df,Mf,If,Bf,jf,Ff,Nf,zf,Uf,Gf,Wf,Hf,Vf,Yf,Kf,qf,Qf,Jf,Xf,Zf,$f,ag,tg,ng,rg,ig,og,ag,sg,lg,cg,ug,dg,fg,hg,pg,mg,gg,vg,yg,bg,Eg,xg,_g,wg,Tg,Sg,Ag,Rg,Pg,Og,Lg,Cg,kg,Dg,Mg,Ig,Bg,jg,Fg,Ng,zg,Ug,Gg,Wg,Hg,Vg,Yg,Kg,qg,Qg,Jg,Xg,Zg,$g,ah,th,nh,rh,ih,oh,ah,sh,lh,ch,uh,dh,fh,hh,ph,mh,gh,vh,yh,bh,Eh,xh,_h,wh,Th,Sh,Ah,Rh,Ph,Oh,Lh,Ch,kh,Dh,Mh,Ih,Bh,jh,Fh,Nh,zh,Uh,Gh,Wh,Hh,Vh,Yh,Kh,qh,Qh,Jh,Xh,Zh,$h,ai,ti,ni,ri,ii,oi,ai,si,li,ci,ui,di,fi,hi,pi,mi,gi,vi,yi,bi,Ei,xi,_i,wi,Ti,Si,Ai,Ri,Pi,Oi,Li,Ci,ki,Di,Mi,Ii,Bi,ji,Fi,Ni,zi,Ui,Gi,Wi,Hi,Vi,Yi,Ki,qi,Qi,Ji,Xi,Zi,$i,aj,tj,nj,rj,ij,oj,aj,sj,lj,cj,uj,dj,fj,hj,pj,mj,gj,vj,yj,bj,Ej,xj,_j,wj,Tj,Sj,Aj,Rj,Pj,Oj,Lj,Cj,kj,Dj,Mj,Ij,Bj,jj,Fj,Nj,zj,Uj,Gj,Wj,Hj,Vj,Yj,Kj,qj,Qj,Jj,Xj,Zj,$j,ak,tk,nk,rk,ik,ok,ak,sk,lk,ck,uk,dk,fk,hk,pk,mk,gk,vk,yk,bk,Ek,xk,_k,wk,Tk,Sk,Ak,Rk,Pk,Ok,Lk,Ck,kk,Dk,Mk,Ik,Bk,jk,Fk,Nk,zk,Uk,Gk,Wk,Hk,Vk,Yk,Kk,qk,Qk,Jk,Xk,Zk,$k,al,tl,nl,rl,il,ol,al,sl,ll,cl,ul,dl,fl,hl,pl,ml,gl,vl,yl,bl,El,xl,_l,wl,Tl,Sl,Al,Rl,Pl,Ol,Ll,Cl,kl,Dl,Ml,Il,Bl,jl,Fl,Nl,zl,Ul,Gl,Wl,Hl,Vl,Yl,Kl,ql,Ql,Jl,Xl,Zl,$l,am,tm,nm,rm,im,om,am,sm,lm,cm,um,dm,fm,hm,pm,mm,gm,vm,ym,bm,Em,xm,_m,wm,Tm,Sm,Am,Rm,Pm,Om,Lm,Cm,km,Dm,Mm,Im,Bm,jm,Fm,Nm,zm,Um,Gm,Wm,Hm,Vm,Ym,Km,qm,Qm,Jm,Xm,Zm,$m,an,tn,nn,rn,in,on,an,sn,ln,cn,un,dn,fn,hn,pn,mn,gn,vn,yn,bn,En,xn,_n,wn,Tn,Sn,An,Rn,Pn,On,Ln,Cn,kn,Dn,Mn,In,Bn,jn,Fn,Nn,zn,Un,Gn,Wn,Hn,Vn,Yn,Kn,qn,Qn,Jn,Xn,Zn,$n,ao,to,no,ro,io,oo,ao,so,lo,co,uo,do,fo,ho,po,mo,go,vo,yo,bo,Eo,xo,_o,wo,To,So,Ao,Ro,Po,Oo,Lo,Co,ko,Do,Mo,Io,Bo,jo,Fo,No,zo,Uo,Go,Wo,Ho,Vo,Yo,Ko,qo,Qo,Jo,Xo,Zo,$o,ap,tp,np,rp,ip,op,ap,sp,lp,cp,up,dp,fp,hp,pp,mp,gp,vp,yp,bp,Ep,xp,_p,wp,Tp,Sp,Ap,Rp,Pp,Op,Lp,Cp,kp,Dp,Mp,Ip,Bp,jp,Fp,Np,zp,Up,Gp,Wp,Hp,Vp,Yp,Kp,qp,Qp,Jp,Xp,Zp,$p,aq,tq,nq,rq,iq,oq,aq,sq,lq,cq,uq,dq,fq,hq,pq,mq,gq,vq,yq,bq,Eq,xq,_q,wq,Tq,Sq,Aq,Rq,Pq,Oq,Lq,Cq,kq,Dq,Mq,Iq,Bq,jq,Fq,Nq,zq,Uq,Gq,Wq,Hq,Vq,Yq,Kq,qq,Qq,Jq,Xq,Zq,$q,ar,tr,nr,rr,ir,or,ar,sr,lr,cr,ur,dr,fr,hr,pr,mr,gr,vr,yr,br,Er,xr,_r,wr,Tr,Sr,Ar,Rr,Pr,Or,Lr,Cr,kr,Dr,Mr,Ir,Br,jr,Fr,Nr,zr,Ur,Gr,Wr,Hr,Vr,Yr,Kr,qr,Qr,Jr,Xr,Zr,$r,as,ts,ns,rs,is,os,as,ss,ls,cs,us,ds,fs,hs,ps,ms,gs,vs,ys,bs,Es,xs,_s,ws,Ts,Ss,As,Rs,Ps,Os,Ls,Cs,ks,Ds,Ms,Is,Bs,js,Fs,Ns,zs,Us,Gs,Ws,Hs,Vs,Ys,Ks,qs,Qs,Js,Xs,Zs,$s,at,tt,nt,rt,it,ot,at,st,lt,ct,ut,dt,ft,ht,pt,mt,gt,vt,yt,bt,Et,xt,_t,wt,Tt,St,At,Rt,Pt,Ot,Lt,Ct,kt,Dt,Mt,It,Bt,jt,Ft,Nt,zt,Ut,Gt,Wt,Ht,Vt,Yt,Kt,qt,Qt,Jt,Xt,Zt,$t,au,tu,nu,ru,iu,ou,au,su,lu,cu,uu,du,fu,hu,pu,mu,gu,vu,yu,bu,Eu,xu,_u,wu,Tu,Su,Au,Ru,Pu,Ou,Lu,Cu,ku,Du,Mu,Iu,Bu,ju,Fu,Nu,zu,Uu,Gu,Wu,Hu,Vu,Yu,Ku,qu,Qu,Ju,Xu,Zu,$u,av,tv,nv,rv,iv,ov,av,sv,lv,cv,uv,dv,fv,hv,pv,mv,gv,vv,yv,bv,Ev,xv,_v,wv,Tv,Sv,Av,Rv,Pv,Ov,Lv,Cv,kv,Dv,Mv,Iv,Bv,jv,Fv,Nv,zv,Uv,Gv,Wv,Hv,Vv,Yv,Kv,qv,Qv,Jv,Xv,Zv,$v,aw,tw,nw,rw,iw,ow,aw,sw,lw,cw,uw,dw,fw,hw,pw,mw,gw,vw,yw,bw,Ew,xw,_w,ww,Tw,Sw,Aw,Rw,Pw,Ow,Lw,Cw,kw,Dw,Mw,Iw,Bw,jw,Fw,Nw,zw,Uw,Gw,Ww,Hw,Vw,Yw,Kw,qw,Qw,Jw,Xw,Zw,$w,ax,tx,nx,rx,ix,ox,ax,sx,lx,cx,ux,dx,fx,hx,px,mx,gx,vx,yx,bx,Ex,xx,_x,wx,Tx,Sx,Ax,Rx,Px,Ox,Lx,Cx,kx,Dx,Mx,Ix,Bx,jx,Fx,Nx,zx,Ux,Gx,Wx,Hx,Vx,Yx,Kx,qx,Qx,Jx,Xx,Zx,$x,ay,ty,ny,ry,iy,oy,ay,sy,ly,cy,uy,dy,fy,hy,py,my,gy,vy,yy,by,Ey,xy,_y,wy,Ty,Sy,Ay,Ry,Py,Oy,Ly,Cy,ky,Dy,My,Iy,By,jy,Fy,Ny,zy,Uy,Gy,Wy,Hy,Vy,Yy,Ky,qy,Qy,Jy,Xy,Zy,$y,az,tz,nz,rz,iz,oz,az,sz,lz,cz,uz,dz,fz,hz,pz,mz,gz,vz,yz,bz,Ez,xz,_z,wz,Tz,Sz,Az,Rz,Pz,Oz,Lz,Cz,kz,Dz,Mz,Iz,Bz,jz,Fz,Nz,zz,Uz,Gz,Wz,Hz,Vz,Yz,Kz,qz,Qz,Jz,Xz,Zz,$z,a_,t_,n_,r_,i_,o_,a_,s_,l_,c_,u_,d_,f_,h_,p_,m_,g_,v_,y_,b_,E_,x_,__ ,w_,T_,S_,A_,R_,P_,O_,L_,C_,k_,D_,M_,I_,B_,j_,F_,N_,z_,U_,G_,W_,H_,V_,Y_,K_,q_,Q_,J_,X_,Z_,$_,aA,tA,nA,rA,iA,oA,aA,sA,lA,cA,uA,dA,fA,hA,pA,mA,gA,vA,yA,bA,EA,xA,_A,wA,TA,SA,AA,RA,PA,OA,LA,CA,kA,DA,MA,IA,BA,jA,FA,NA,zA,UA,GA,WA,HA,VA,YA,KA,qA,QA,JA,XA,ZA,$A,aB,tB,nB,rB,iB,oB,aB,sB,lB,cB,uB,dB,fB,hB,pB,mB,gB,vB,yB,bB,EB,xB,_B,wB,TB,SB,AB,RB,PB,OB,LB,CB,kB,DB,MB,IB,BB,jB,FB,NB,zB,UB,GB,WB,HB,VB,YB,KB,qB,QB,JB,XB,ZB,$B,aC,tC,nC,rC,iC,oC,aC,sC,lC,cC,uC,dC,fC,hC,pC,mC,gC,vC,yC,bC,EC,xC,_C,wC,TC,SC,AC,RC,PC,OC,LC,CC,kC,DC,MC,IC,BC,jC,FC,NC,zC,UC,GC,WC,HC,VC,YC,KC,qC,QC,JC,XC,ZC,$C,aD,tD,nD,rD,iD,oD,aD,sD,lD,cD,uD,dD,fD,hD,pD,mD,gD,vD,yD,bD,ED,xD,_D,wD,TD,SD,AD,RD,PD,OD,LD,CD,kD,DD,MD,ID,BD,jD,FD,ND,zD,UD,GD,WD,HD,VD,YD,KD,qD,QD,JD,XD,ZD,$D,aE,tE,nE,rE,iE,oE,aE,sE,lE,cE,uE,dE,fE,hE,pE,mE,gE,vE,yE,bE,EE,xE,_E,wE,TE,SE,AE,RE,PE,OE,LE,CE,kE,DE,ME,IE,BE,jE,FE,NE,zE,UE,GE,WE,HE,VE,YE,KE,qE,QE,JE,XE,ZE,$E,aF,tF,nF,rF,iF,oF,aF,sF,lF,cF,uF,dF,fF,hF,pF,mF,gF,vF,yF,bF,EF,xF,_F,wF,TF,SF,AF,RF,PF,OF,LF,CF,kF,DF,MF,IF,BF,jF,FF,NF,zF,UF,GF,WF,HF,VF,YF,KF,qF,QF,JF,XF,ZF,$F,aG,tG,nG,rG,iG,oG,aG,sG,lG,cG,uG,dG,fG,hG,pG,mG,gG,vG,yG,bG,EG,xG,_G,wG,TG,SG,AG,RG,PG,OG,LG,CG,kG,DG,MG,IG,BG,jG,FG,NG,zG,UG,GG,WG,HG,VG,YG,KG,qG,QG,JG,XG,ZG,$G,aH,tH,nH,rH,iH,oH,aH,sH,lH,cH,uH,dH,fH,hH,pH,mH,gH,vH,yH,bH,EH,xH,_H,wH,TH,SH,AH,RH,PH,OH,LH,CH,kH,DH,MH,IH,BH,jH,FH,NH,zH,UH,GH,WH,HH,VH,YH,KH,qH,QH,JH,XH,ZH,$H,aI,tI,nI,rI,iI,oI,aI,sI,lI,cI,uI,dI,fI,hI,pI,mI,gI,vI,yI,bI,EI,xI,_I,wI,TI,SI,AI,RI,PI,OI,LI,CI,kI,DI,MI,II,BI,jI,FI,NI,zI,UI,GI,WI,HI,VI,YI,KI,qI,QI,JI,XI,ZI,$I,aJ,tJ,nJ,rJ,iJ,oJ,aJ,sJ,lJ,cJ,uJ,dJ,fJ,hJ,pJ,mJ,gJ,vJ,yJ,bJ,EJ,xJ,_J,wJ,TJ,SJ,AJ,RJ,PJ,OJ,LJ,CJ,kJ,DJ,MJ,IJ,BJ,jJ,FJ,NJ,zJ,UJ,GJ,WJ,HJ,VJ,YJ,KJ,qJ,QJ,JJ,XJ,ZJ,$J,aK,tK,nK,rK,iK,oK,aK,sK,lK,cK,uK,dK,fK,hK,pK,mK,gK,vK,yK,bK,EK,xK,_K,wK,TK,SK,AK,RK,PK,OK,LK,CK,kK,DK,MK,IK,BK,jK,FK,NK,zK,UK,GK,WK,HK,VK,YK,KK,qK,QK,JK,XK,ZK,$K,aL,tL,nL,rL,iL,oL,aL,sL,lL,cL,uL,dL,fL,hL,pL,mL,gL,vL,yL,bL,EL,xL,_L,wL,TL,SL,AL,RL,PL,OL,LL,CL,kL,DL,ML,IL,BL,jL,FL,NL,zL,UL,GL,WL,HL,VL,YL,KL,qL,QL,JL,XL,ZL,$L,aM,tM,nM,rM,iM,oM,aM,sM,lM,cM,uM,dM,fM,hM,pM,mM,gM,vM,yM,bM,EM,xM,_M,wM,TM,SM,AM,RM,PM,OM,LM,CM,kM,DM,MM,IM,BM,jM,FM,NM,zM,UM,GM,WM,HM,VM,YM,KM,qM,QM,JM,XM,ZM,$M,aN,tN,nN,rN,iN,oN,aN,sN,lN,cN,uN,dN,fN,hN,pN,mN,gN,vN,yN,bN,EN,xN,_N,wN,TN,SN,AN,RN,PN,ON,LN,CN,kN,DN,MN,IN,BN,jN,FN,NN,zN,UN,GN,WN,HN,VN,YN,KN,qN,QN,JN,XN,ZN,$N,aO,tO,nO,rO,iO,oO,aO,sO,lO,cO,uO,dO,fO,hO,pO,mO,gO,vO,yO,bO,EO,xO,_O,wO,TO,SO,AO,RO,PO,OO,LO,CO,kO,DO,MO,IO,BO,jO,FO,NO,zO,UO,GO,WO,HO,VO,YO,KO,qO,QO,JO,XO,ZO,$O,aP,tP,nP,rP,iP,oP,aP,sP,lP,cP,uP,dP,fP,hP,pP,mP,gP,vP,yP,bP,EP,xP,_P,wP,TP,SP,AP,RP,PP,OP,LP,CP,kP,DP,MP,IP,BP,jP,FP,NP,zP,UP,GP,WP,HP,VP,YP,KP,qP,QP,JP,XP,ZP,$P,aQ,tQ,nQ,rQ,iQ,oQ,aQ,sQ,lQ,cQ,uQ,dQ,fQ,hQ,pQ,mQ,gQ,vQ,yQ,bQ,EQ,xQ,_Q,wQ,TQ,SQ,AQ,RQ,PQ,OQ,LQ,CQ,kQ,DQ,MQ,IQ,BQ,jQ,FQ,NQ,zQ,UQ,GQ,WQ,HQ,VQ,YQ,KQ,qQ,QQ,JQ,XQ,ZQ,$Q,aR,tR,nR,rR,iR,oR,aR,sR,lR,cR,uR,dR,fR,hR,pR,mR,gR,vR,yR,bR,ER,xR,_R,wR,TR,SR,AR,RR,PR,OR,LR,CR,kR,DR,MR,IR,BR,jR,FR,NR,zR,UR,GR,WR,HR,VR,YR,KR,qR,QR,JR,XR,ZR,$R,aS,tS,nS,rS,iS,oS,aS,sS,lS,cS,uS,dS,fS,hS,pS,mS,gS,vS,yS,bS,ES,xS,_S,wS,TS,SS,AS,RS,PS,OS,LS,CS,kS,DS,MS,IS,BS,jS,FS,NS,zS,US,GS,WS,HS,VS,YS,KS,qS,QS,JS,XS,ZS,$S,aT,tT,nT,rT,iT,oT,aT,sT,lT,cT,uT,dT,fT,hT,pT,mT,gT,vT,yT,bT,ET,xT,_T,wT,TT,ST,AT,RT,PT,OT,LT,CT,kT,DT,MT,IT,BT,jT,FT,NT,zT,UT,GT,WT,HT,VT,YT,KT,qT,QT,JT,XT,ZT,$T,aU,tU,nU,rU,iU,oU,aU,sU,lU,cU,uU,dU,fU,hU,pU,mU,gU,vU,yU,bU,EU,xU,_U,wU,TU,SU,AU,RU,PU,OU,LU,CU,kU,DU,MU,IU,BU,jU,FU,NU,zU,UU,GU,WU,HU,VU,YU,KU,qU,QU,JU,XU,ZU,$U,aV,tV,nV,rV,iV,oV,aV,sV,lV,cV,uV,dV,fV,hV,pV,mV,gV,vV,yV,bV,EV,xV,_V,wV,TV,SV,AV,RV,PV,OV,LV,CV,kV,DV,MV,IV,BV,jV,FV,NV,zV,UV,GV,WV,HV,VV,YV,KV,qV,QV,JV,XV,ZV,$V,aW,tW,nW,rW,iW,oW,aW,sW,lW,cW,uW,dW,fW,hW,pW,mW,gW,vW,yW,bW,EW,xW,_W,wW,TW,SW,AW,RW,PW,OW,LW,CW,kW,DW,MW,IW,BW,jW,FW,NW,zW,UW,GW,WW,HW,VW,YW,KW,qW,QW,JW,XW,ZW,$W,aX,tX,nX,rX,iX,oX,aX,sX,lX,cX,uX,dX,fX,hX,pX,mX,gX,vX,yX,bX,EX,xX,_X,wX,TX,SX,AX,RX,PX,OX,LX,CX,kX,DX,MX,IX,BX,jX,FX,NX,zX,UX,GX,WX,HX,VX,YX,KX,qX,QX,JX,XX,ZX,$X,aY,tY,nY,rY,iY,oY,aY,sY,lY,cY,uY,dY,fY,hY,pY,mY,gY,vY,yY,bY,EY,xY,_Y,wY,TY,SY,AY,RY,PY,OY,LY,CY,kY,DY,MY,IY,BY,jY,FY,NY,zY,UY,GY,WY,HY,VY,YY,KY,qY,QY,JY,XY,ZY,$Y,aZ,tZ,nZ,rZ,iZ,oZ,aZ,sZ,lZ,cZ,uZ,dZ,fZ,hZ,pZ,mZ,gZ,vZ,yZ,bZ,EZ,xZ,_Z,wZ,TZ,SZ,AZ,RZ,PZ,OZ,LZ,CZ,kZ,DZ,MZ,IZ,BZ,jZ,FZ,NZ,zZ,UZ,GZ,WZ,HZ,VZ,YZ,KZ,qZ,QZ,JZ,XZ,ZZ,$Z,a$,t$,n$,r$,i$,o$,a$,s$,l$,c$,u$,d$,f$,h$,p$,m$,g$,v$,y$,b$,E$,x$,_$,w$,T$,S$,A$,R$,P$,O$,L$,C$,k$,D$,M$,I$,B$,j$,F$,N$,z$,U$,G$,W$,H$,V$,Y$,K$,q$,Q$,J$,X$,Z$,$$,a0,t0,n0,r0,i0,o0,a0,s0,l0,c0,u0,d0,f0,h0,p0,m0,g0,v0,y0,b0,E0,x0,_0,w0,T0,S0,A0,R0,P0,O0,L0,C0,k0,D0,M0,I0,B0,j0,F0,N0,z0,U0,G0,W0,H0,V0,Y0,K0,q0,Q0,J0,X0,Z0,$0,a1,t1,n1,r1,i1,o1,a1,s1,l1,c1,u1,d1,f1,h1,p1,m1,g1,v1,y1,b1,E1,x1,_1,w1,T1,S1,A1,R1,P1,O1,L1,C1,k1,D1,M1,I1,B1,j1,F1,N1,z1,U1,G1,W1,H1,V1,Y1,K1,q1,Q1,J1,X1,Z1,$1,a2,t2,n2,r2,i2,o2,a2,s2,l2,c2,u2,d2,f2,h2,p2,m2,g2,v2,y2,b2,E2,x2,_2,w2,T2,S2,A2,R2,P2,O2,L2,C2,k2,D2,M2,I2,B2,j2,F2,N2,z2,U2,G2,W2,H2,V2,Y2,K2,q2,Q2,J2,X2,Z2,$2,a3,t3,n3,r3,i3,o3,a3,s3,l3,c3,u3,d3,f3,h3,p3,m3,g3,v3,y3,b3,E3,x3,_3,w3,T3,S3,A3,R3,P3,O3,L3,C3,k3,D3,M3,I3,B3,j3,F3,N3,z3,U3,G3,W3,H3,V3,Y3,K3,q3,Q3,J3,X3,Z3,$3,a4,t4,n4,r4,i4,o4,a4,s4,l4,c4,u4,d4,f4,h4,p4,m4,g4,v4,y4,b4,E4,x4,_4,w4,T4,S4,A4,R4,P4,O4,L4,C4,k4,D4,M4,I4,B4,j4,F4,N4,z4,U4,G4,W4,H4,V4,Y4,K4,q4,Q4,J4,X4,Z4,$4,a5,t5,n5,r5,i5,o5,a5,s5,l5,c5,u5,d5,f5,h5,p5,m5,g5,v5,y5,b5,E5,x5,_5,w5,T5,S5,A5,R5,P5,O5,L5,C5,k5,D5,M5,I5,B5,j5,F5,N5,z5,U5,G5,W5,H5,V5,Y5,K5,q5,Q5,J5,X5,Z5,$5,a6,t6,n6,r6,i6,o6,a6,s6,l6,c6,u6,d6,f6,h6,p6,m6,g6,v6,y6,b6,E6,x6,_6,w6,T6,S6,A6,R6,P6,O6,L6,C6,k6,D6,M6,I6,B6,j6,F6,N6,z6,U6,G6,W6,H6,V6,Y6,K6,q6,Q6,J6,X6,Z6,$6,a7,t7,n7,r7,i7,o7,a7,s7,l7,c7,u7,d7,f7,h7,p7,m7,g7,v7,y7,b7,E7,x7,_7,w7,T7,S7,A7,R7,P7,O7,L7,C7,k7,D7,M7,I7,B7,j7,F7,N7,z7,U7,G7,W7,H7,V7,Y7,K7,q7,Q7,J7,X7,Z7,$7,a8,t8,n8,r8,i8,o8,a8,s8,l8,c8,u8,d8,f8,h8,p8,m8,g8,v8,y8,b8,E8,x8,_8,w8,T8,S8,A8,R8,P8,O8,L8,C8,k8,D8,M8,I8,B8,j8,F8,N8,z8,U8,G8,W8,H8,V8,Y8,K8,q8,Q8,J8,X8,Z8,$8,a9,t9,n9,r9,i9,o9,a9,s9,l9,c9,u9,d9,f9,h9,p9,m9,g9,v9,y9,b9,E9,x9,_9,w9,T9,S9,A9,R9,P9,O9,L9,C9,k9,D9,M9,I9,B9,j9,F9,N9,z9,U9,G9,W9,H9,V9,Y9,K9,q9,Q9,J9,X9,Z9,$9,aa,ta,na,ra,ia,oa,aa,sa,la,ca,ua,da,fa,ha,pa,ma,ga,va,ya,ba,Ea,xa,_a,wa,Ta,Sa,Aa,Ra,Pa,Oa,La,Ca,ka,Da,Ma,Ia,Ba,ja,Fa,Na,za,Ua,Ga,Wa,Ha,Va,Ya,Ka,qa,Qa,Ja,Xa,Za,$a,ab,tb,nb,rb,ib,ob,ab,sb,lb,cb,ub,db,fb,hb,pb,mb,gb,vb,yb,bb,Eb,xb,_b,wb,Tb,Sb,Ab,Rb,Pb,Ob,Lb,Cb,kb,Db,Mb,Ib,Bb,jb,Fb,Nb,zb,Ub,Gb,Wb,Hb,Vb,Yb,Kb,qb,Qb,Jb,Xb,Zb,$b,ac,tc,nc,rc,ic,oc,ac,sc,lc,cc,uc,dc,fc,hc,pc,mc,gc,vc,yc,bc,Ec,xc,_c,wc,Tc,Sc,Ac,Rc,Pc,Oc,Lc,Cc,kc,Dc,Mc,Ic,Bc,jc,Fc,Nc,zc,Uc,Gc,Wc,Hc,Vc,Yc,Kc,qc,Qc,Jc,Xc,Zc,$c,ad,td,nd,rd,id,od,ad,sd,ld,cd,ud,dd,fd,hd,pd,md,gd,vd,yd,bd,Ed,xd,_d,wd,Td,Sd,Ad,Rd,Pd,Od,Ld,Cd,kd,Dd,Md,Id,Bd,jd,Fd,Nd,zd,Ud,Gd,Wd,Hd,Vd,Yd,Kd,qd,Qd,Jd,Xd,Zd,$d,ae,te,ne,re,ie,oe,ae,se,le,ce,ue,de,fe,he,pe,me,ge,ve,ye,be,Ee,xe,_e,we,Te,Se,Ae,Re,Pe,Oe,Le,Ce,ke,De,Me,Ie,Be,je,Fe,Ne,ze,Ue,Ge,We,He,Ve,Ye,Ke,qe,Qe,Je,Xe,Ze,$e,af,tf,nf,rf,af,sf,lf,cf,uf,df,ff,hf,pf,mf,gf,vf,yf,bf,Ef,xf,_f,wf,Tf,Sf,Af,Rf,Pf,Of,Lf,Cf,kf,Df,Mf,If,Bf,jf,Ff,Nf,zf,Uf,Gf,Wf,Hf,Vf,Yf,Kf,qf,Qf,Jf,Xf,Zf,$f,ag,tg,ng,rg,ig,og,ag,sg,lg,cg,ug,dg,fg,hg,pg,mg,gg,vg,yg,bg,Eg,xg,_g,wg,Tg,Sg,Ag,Rg,Pg,Og,Lg,Cg,kg,Dg,Mg,Ig,Bg,jg,Fg,Ng,zg,Ug,Gg,Wg,Hg,Vg,Yg,Kg,qg,Qg,Jg,Xg,Zg,$g,ah,th,nh,rh,ih,oh,ah,sh,lh,ch,uh,dh,fh,hh,ph,mh,gh,vh,yh,bh,Eh,xh,_h,wh,Th,Sh,Ah,Rh,Ph,Oh,Lh,Ch,kh,Dh,Mh,Ih,Bh,jh,Fh,Nh,zh,Uh,Gh,Wh,Hh,Vh,Yh,Kh,qh,Qh,Jh,Xh,Zh,$h,ai,ti,ni,ri,ii,oi,ai,si,li,ci,ui,di,fi,hi,pi,mi,gi,vi,yi,bi,Ei,xi,_i,wi,Ti,Si,Ai,Ri,Pi,Oi,Li,Ci,ki,Di,Mi,Ii,Bi,ji,Fi,Ni,zi,Ui,Gi,Wi,Hi,Vi,Yi,Ki,qi,Qi,Ji,Xi,Zi,$i,aj,tj,nj,rj,ij,oj,aj,sj,lj,cj,uj,dj,fj,hj,pj,mj,gj,vj,yj,bj,Ej,xj,_j,wj,Tj,Sj,Aj,Rj,Pj,Oj,Lj,Cj,kj,Dj,Mj,Ij,Bj,jj,Fj,Nj,zj,Uj,Gj,Wj,Hj,Vj,Yj,Kj,qj,Qj,Jj,Xj,Zj,$j,ak,tk,nk,rk,ik,ok,ak,sk,lk,ck,uk,dk,fk,hk,pk,mk,gk,vk,yk,bk,Ek,xk,_k,wk,Tk,Sk,Ak,Rk,Pk,Ok,Lk,Ck,kk,Dk,Mk,Ik,Bk,jk,Fk,Nk,zk,Uk,Gk,Wk,Hk,Vk,Yk,Kk,qk,Qk,Jk,Xk,Zk,$k,al,tl,nl,rl,il,ol,al,sl,ll,cl,ul,dl,fl,hl,pl,ml,gl,vl,yl,bl,El,xl,_l,wl,Tl,Sl,Al,Rl,Pl,Ol,Ll,Cl,kl,Dl,Ml,Il,Bl,jl,Fl,Nl,zl,Ul,Gl,Wl,Hl,Vl,Yl,Kl,ql,Ql,Jl,Xl,Zl,$l,am,tm,nm,rm,im,om,am,sm,lm,cm,um,dm,fm,hm,pm,mm,gm,vm,ym,bm,Em,xm,_m,wm,Tm,Sm,Am,Rm,Pm,Om,Lm,Cm,km,Dm,Mm,Im,Bm,jm,Fm,Nm,zm,Um,Gm,Wm,Hm,Vm,Ym,Km,qm,Qm,Jm,Xm,Zm,$m,an,tn,nn,rn,in,on,an,sn,ln,cn,un,dn,fn,hn,pn,mn,gn,vn,yn,bn,En,xn,_n,wn,Tn,Sn,An,Rn,Pn,On,Ln,Cn,kn,Dn,Mn,In,Bn,jn,Fn,Nn,zn,Un,Gn,Wn,Hn,Vn,Yn,Kn,qn,Qn,Jn,Xn,Zn,$n,ao,to,no,ro,io,oo,ao,so,lo,co,uo,do,fo,ho,po,mo,go,vo,yo,bo,Eo,xo,_o,wo,To,So,Ao,Ro,Po,Oo,Lo,Co,ko,Do,Mo,Io,Bo,jo,Fo,No,zo,Uo,Go,Wo,Ho,Vo,Yo,Ko,qo,Qo,Jo,Xo,Zo,$o,ap,tp,np,rp,ip,op,ap,sp,lp,cp,up,dp,fp,hp,pp,mp,gp,vp,yp,bp,Ep,xp,_p,wp,Tp,Sp,Ap,Rp,Pp,Op,Lp,Cp,kp,Dp,Mp,Ip,Bp,jp,Fp,Np,zp,Up,Gp,Wp,Hp,Vp,YP,Kp,qp,Qp,Jp,Xp,Zp,$p,aq,tq,nq,rq,iq,oq,aq,sq,lq,cq,uq,dq,fq,hq,pq,mq,gq,vq,yq,bq,Eq,xq,_q,wq,Tq,Sq,Aq,Rq,Pq,Oq,Lq,Cq,kq,Dq,Mq,Iq,Bq,jq,Fq,Nq,zq,Uq,Gq,Wq,Hq,Vq,Yq,Kq,qq,Qq,Jq,Xq,Zq,$q,ar,tr,nr,rr,ir,or,ar,sr,lr,cr,ur,dr,fr,hr,pr,mr,gr,vr,yr,br,Er,xr,_r,wr,Tr,Sr,Ar,Rr,Pr,Or,Lr,Cr,kr,Dr,Mr,Ir,Br,jr,Fr,Nr,zr,Ur,Gr,Wr,Hr,Vr,Yr,Kr,qr,Qr,Jr,Xr,Zr,$r,as,ts,ns,rs,is,os,as,ss,ls,cs,us,ds,fs,hs,ps,ms,gs,vs,ys,bs,Es,xs,_s,ws,Ts,Ss,As,Rs,Ps,Os,Ls,Cs,ks,Ds,Ms,Is,Bs,js,Fs,Ns,zs,Us,Gs,Ws,Hs,Vs,Ys,KS,qs,Qs,Js,Xs,Zs,$s,at,tt,nt,rt,it,ot,at,st,lt,ct,ut,dt,ft,ht,pt,mt,gt,vt,yt,bt,Et,xt,_t,wt,Tt,St,At,Rt,Pt,Ot,Lt,Ct,kt,Dt,Mt,It,Bt,jt,Ft,Nt,zt,Ut,Gt,Wt,Ht,Vt,Yt,Kt,qt,Qt,Jt,Xt,Zt,$t,au,tu,nu,ru,iu,ou,au,su,lu,cu,uu,du,fu,hu,pu,mu,gu,vu,yu,bu,Eu,xu,_u,wu,Tu,Su,Au,Ru,Pu,Ou,Lu,Cu,ku,Du,Mu,Iu,Bu,ju,Fu,Nu,zu,Uu,Gu,Wu,Hu,Vu,Yu,Ku,qu,Qu,Ju,Xu,Zu,$u,av,tv,nv,rv,iv,ov,av,sv,lv,cv,uv,dv,fv,hv,pv,mv,gv,vv,yv,bv,Ev,xv,_v,wv,Tv,Sv,Av,Rv,Pv,Ov,Lv,CV,kv,Dv,Mv,Iv,Bv,jv,Fv,Nv,zv,Uv,Gv,Wv,Hv,Vv,Yv,Kv,qv,Qv,Jv,Xv,Zv,$v,aw,tw,nw,rw,iw,ow,aw,sw,lw,cw,uw,dw,fw,hw,pw,mw,gw,vw,yw,bw,Ew,xw,_w,ww,Tw,Sw,Aw,Rw,Pw,Ow,Lw,Cw,kw,Dw,Mw,Iw,Bw,jw,Fw,Nw,zw,Uw,Gw,Ww,Hw,Vw,Yw,Kw,qw,Qw,Jw,Xw,ZW,$w,ax,tx,nx,rx,ix,ox,ax,sx,lx,cx,ux,dx,fx,hx,px,mx,gx,vx,yx,bx,Ex,xx,_x,wx,Tx,Sx,Ax,Rx,Px,Ox,Lx,Cx,kx,Dx,Mx,IX,Bx,jx,Fx,Nx,zx,Ux,Gx,Wx,Hx,Vx,Yx,Kx,qx,Qx,Jx,XX,ZX,$x,ay,ty,ny,ry,iy,oy,ay,sy,ly,cy,uy,dy,fy,hy,py,my,gy,vy,yy,by,Ey,xy,_y,wy,Ty,Sy,Ay,Ry,Py,Oy,LY,Cy,ky,Dy,My,Iy,By,jy,Fy,Ny,zy,Uy,Gy,Wy,Hy,Vy,YY,Ky,qy,Qy,Jy,XY,ZY,$y,az,tz,nz,rz,iz,oz,az,sz,lz,cz,uz,dz,fz,hz,pz,mz,gz,vz,yz,bz,Ez,xz,_z,wz,Tz,Sz,Az,Rz,Pz,Oz,Lz,Cz,kz,Dz,Mz,IZ,Bz,jz,Fz,Nz,zz,Uz,Gz,Wz,Hz,Vz,Yz,Kz,qz,Qz,Jz,XZ,ZZ,$z,a$,t$,n$,r$,i$,o$,a$,s$,l$,c$,u$,d$,f$,h$,p$,m$,g$,v$,y$,b$,E$,x$,_$,w$,T$,S$,A$,R$,P$,O$,L$,C$,k$,D$,M$,I$,B$,j$,F$,N$,z$,U$,G$,W$,H$,V$,Y$,K$,q$,Q$,J$,X$,Z$,$$,a0,t0,n0,r0,i0,o0,a0,s0,l0,c0,u0,d0,f0,h0,p0,m0,g0,v0,y0,b0,E0,x0,_0,w0,T0,S0,A0,R0,P0,O0,L0,C0,k0,D0,M0,I0,B0,j0,F0,N0,z0,U0,G0,W0,H0,V0,Y0,K0,q0,Q0,J0,X0,Z0,$0,a1,t1,n1,r1,i1,o1,a1,s1,l1,c1,u1,d1,f1,h1,p1,m1,g1,v1,y1,b1,E1,x1,_1,w1,T1,S1,A1,R1,P1,O1,L1,C1,k1,D1,M1,I1,B1,j1,F1,N1,z1,U1,G1,W1,H1,V1,Y1,K1,q1,Q1,J1,X1,Z1,$1,a2,t2,n2,r2,i2,o2,a2,s2,l2,c2,u2,d2,f2,h2,p2,m2,g2,v2,y2,b2,E2,x2,_2,w2,T2,S2,A2,R2,P2,O2,L2,C2,k2,D2,M2,I2,B2,j2,F2,N2,z2,U2,G2,W2,H2,V2,Y2,K2,q2,Q2,J2,X2,Z2,$2,a3,t3,n3,r3,i3,o3,a3,s3,l3,c3,u3,d3,f3,h3,p3,m3,g3,v3,y3,b3,E3,x3,_3,w3,T3,S3,A3,R3,P3,O3,L3,C3,k3,D3,M3,I3,B3,j3,F3,N3,z3,U3,G3,W3,H3,V3,Y3,K3,q3,Q3,J3,X3,Z3,$3,a4,t4,n4,r4,i4,o4,a4,s4,l4,c4,u4,d4,f4,h4,p4,m4,g4,v4,y4,b4,E4,x4,_4,w4,T4,S4,A4,R4,P4,O4,L4,C4,k4,D4,M4,I4,B4,j4,F4,N4,z4,U4,G4,W4,H4,V4,Y4,K4,q4,Q4,J4,X4,Z4,$4,a5,t5,n5,r5,i5,o5,a5,s5,l5,c5,u5,d5,f5,h5,p5,m5,g5,v5,y5,b5,E5,x5,_5,w5,T5,S5,A5,R5,P5,O5,L5,C5,k5,D5,M5,I5,B5,j5,F5,N5,z5,U5,G5,W5,H5,V5,Y5,K5,q5,Q5,J5,X5,Z5,$5,a6,t6,n6,r6,i6,o6,a6,s6,l6,c6,u6,d6,f6,h6,p6,m6,g6,v6,y6,b6,E6,x6,_6,w6,T6,S6,A6,R6,P6,O6,L6,C6,k6,D6,M6,I6,B6,j6,F6,N6,z6,U6,G6,W6,H6,V6,Y6,K6,q6,Q6,J6,X6,Z6,$6,a7,t7,n7,r7,i7,o7,a7,s7,l7,c7,u7,d7,f7,h7,p7,m7,g7,v7,y7,b7,E7,x7,_7,w7,T7,S7,A7,R7,P7,O7,L7,C7,k7,D7,M7,I7,B7,j7,F7,N7,z7,U7,G7,W7,H7,V7,Y7,K7,q7,Q7,J7,X7,Z7,$7,a8,t8,n8,r8,i8,o8,a8,s8,l8,c8,u8,d8,f8,h8,p8,m8,g8,v8,y8,b8,E8,x8,_8,w8,T8,S8,A8,R8,P8,O8,L8,C8,k8,D8,M8,I8,B8,j8,F8,N8,z8,U8,G8,W8,H8,V8,Y8,K8,q8,Q8,J8,X8,Z8,$8,a9,t9,n9,r9,i9,o9,a9,s9,l9,c9,u9,d9,f9,h9,p9,m9,g9,v9,y9,b9,E9,x9,_9,w9,T9,S9,A9,R9,P9,O9,L9,C9,k9,D9,M9,I9,B9,j9,F9,N9,z9,U9,G9,W9,H9,V9,Y9,K9,q9,Q9,J9,X9,Z9,$9};var n="undefined"!=typeof self?self:global;"object"==typeof exports?exports.THREE=n.THREE="undefined"!=typeof navigator&&navigator.userAgent||"";else if("object"==typeof module&&module.exports)module.exports=n.THREE;else n.THREE=n.THREE||{}}();!function(e){var t=e.THREE;t.REVISION="167";var n="undefined"!=typeof navigator&&navigator.userAgent||"";t.WEBGL={isWebGLAvailable:function(){try{var e=document.createElement("canvas");return!(!window.WebGLRenderingContext||!(e.getContext("webgl")||e.getContext("experimental-webgl")))}catch(t){return!1}},isWebGL2Available:function(){try{var e=document.createElement("canvas");return!(!window.WebGL2RenderingContext||e.getContext("webgl2"))}catch(t){return!1}},getWebGLErrorMessage:function(){return this.getErrorMessage(1)},getWebGL2ErrorMessage:function(){return this.getErrorMessage(2)},getErrorMessage:function(e){var n="This browser does not support WebGL";switch(e){case 1:n="This browser does not support WebGL";break;case 2:n="This browser does not support WebGL 2"}var r=document.createElement("div");return r.id="webglmessage",r.style.fontFamily="monospace",r.style.fontSize="13px",r.style.fontWeight="normal",r.style.textAlign="center",r.style.background="#fff",r.style.color="#000",r.style.padding="1.5em",r.style.width="400px",r.style.margin="5em auto 0",r.innerHTML=window.WebGLRenderingContext?'<p>'+n+".</p>":'<p>'+n+".</p>",r}};var r=function(e,t,n,r,i,o,a,s,l,c,u,d,f,h,p,m,g,v,y,b,E,x,_,w,T,S,A,R,P,O,L,C,k,D,M,I,B,j,F,N,z,U,G,W,H,V,Y,K,q,Q,J,X,Z,$,ee,te,ne,re,ie,oe,ae,se,le,ce,ue,de,fe,he,pe,me,ge,ve,ye,be,Ee,xe,_e,we,Te,Se,Ae,Re,Pe,Oe,Le,Ce,ke,De,Me,Ie,Be,je,Fe,Ne,ze,Ue,Ge,We,He,Ve,Ye,Ke,qe,Qe,Je,Xe,Ze,$e,et,tt,nt,rt,it,ot,at,st,lt,ct,ut,dt,ft,ht,pt,mt,gt,vt,yt,bt,Et,xt,_t,wt,Tt,St,At,Rt,Pt,Ot,Lt,Ct,kt,Dt,Mt,It,Bt,jt,Ft,Nt,zt,Ut,Gt,Wt,Ht,Vt,Yt,Kt,qt,Qt,Jt,Xt,Zt,$t,eu,tu,nu,ru,iu,ou,eu,su,lu,cu,uu,du,fu,hu,pu,mu,gu,vu,yu,bu,Eu,xu,_u,wu,Tu,Su,Au,Ru,Pu,Ou,Lu,Cu,ku,Du,Mu,Iu,Bu,ju,Fu,Nu,zu,Uu,Gu,Wu,Hu,Vu,Yu,Ku,qu,Qu,Ju,Xu,Zu,$u,ev,tv,nv,rv,iv,ov,ev,sv,lv,cv,uv,dv,fv,hv,pv,mv,gv,vv,yv,bv,Ev,xv,_v,wv,Tv,Sv,Av,Rv,Pv,Ov,Lv,Cv,kv,Dv,Mv,Iv,Bv,jv,Fv,Nv,zv,Uv,Gv,Wv,Hv,Vv,Yv,Kv,qv,Qv,Jv,Xv,Zv,$v,ew,tw,nw,rw,iw,ow,ew,sw,lw,cw,uw,dw,fw,hw,pw,mw,gw,vw,yw,bw,Ew,xw,_w,ww,Tw,Sw,Aw,Rw,Pw,Ow,Lw,Cw,kw,Dw,Mw,Iw,Bw,jw,Fw,Nw,zw,Uw,Gw,Ww,Hw,Vw,Yw,Kw,qw,Qw,Jw,Xw,Zw,$w,ex,tx,nx,rx,ix,ox,ex,sx,lx,cx,ux,dx,fx,hx,px,mx,gx,vx,yx,bx,Ex,xx,_x,wx,Tx,Sx,Ax,Rx,Px,Ox,Lx,Cx,kx,Dx,Mx,IX,Bx,jx,Fx,Nx,zx,Ux,Gx,Wx,Hx,Vx,Yx,Kx,qx,Qx,Jx,XX,ZX,$x,ey,ty,ny,ry,iy,oy,ey,sy,ly,cy,uy,dy,fy,hy,py,my,gy,vy,yy,by,Ey,xy,_y,wy,Ty,Sy,Ay,Ry,Py,Oy,LY,Cy,ky,Dy,My,Iy,By,jy,Fy,Ny,zy,Uy,Gy,Wy,Hy,Vy,YY,Ky,qy,Qy,Jy,XY,ZY,$y,ez,tz,nz,rz,iz,oz,ez,sz,lz,cz,uz,dz,fz,hz,pz,mz,gz,vz,yz,bz,Ez,xz,_z,wz,Tz,Sz,Az,Rz,Pz,Oz,Lz,Cz,kz,Dz,Mz,IZ,Bz,jz,Fz,Nz,zz,Uz,Gz,Wz,Hz,Vz,Yz,Kz,qz,Qz,Jz,XZ,ZZ,$z,e$,t$,n$,r$,i$,o$,e$,s$,l$,c$,u$,d$,f$,h$,p$,m$,g$,v$,y$,b$,E$,x$,_$,w$,T$,S$,A$,R$,P$,O$,L$,C$,k$,D$,M$,I$,B$,j$,F$,N$,z$,U$,G$,W$,H$,V$,Y$,K$,q$,Q$,J$,X$,Z$,$$,e0,t0,n0,r0,i0,o0,e0,s0,l0,c0,u0,d0,f0,h0,p0,m0,g0,v0,y0,b0,E0,x0,_0,w0,T0,S0,A0,R0,P0,O0,L0,C0,k0,D0,M0,I0,B0,j0,F0,N0,z0,U0,G0,W0,H0,V0,Y0,K0,q0,Q0,J0,X0,Z0,$0,e1,t1,n1,r1,i1,o1,e1,s1,l1,c1,u1,d1,f1,h1,p1,m1,g1,v1,y1,b1,E1,x1,_1,w1,T1,S1,A1,R1,P1,O1,L1,C1,k1,D1,M1,I1,B1,j1,F1,N1,z1,U1,G1,W1,H1,V1,Y1,K1,q1,Q1,J1,X1,Z1,$1,e2,t2,n2,r2,i2,o2,e2,s2,l2,c2,u2,d2,f2,h2,p2,m2,g2,v2,y2,b2,E2,x2,_2,w2,T2,S2,A2,R2,P2,O2,L2,C2,k2,D2,M2,I2,B2,j2,F2,N2,z2,U2,G2,W2,H2,V2,Y2,K2,q2,Q2,J2,X2,Z2,$2,e3,t3,n3,r3,i3,o3,e3,s3,l3,c3,u3,d3,f3,h3,p3,m3,g3,v3,y3,b3,E3,x3,_3,w3,T3,S3,A3,R3,P3,O3,L3,C3,k3,D3,M3,I3,B3,j3,F3,N3,z3,U3,G3,W3,H3,V3,Y3,K3,q3,Q3,J3,X3,Z3,$3,e4,t4,n4,r4,i4,o4,e4,s4,l4,c4,u4,d4,f4,h4,p4,m4,g4,v4,y4,b4,E4,x4,_4,w4,T4,S4,A4,R4,P4,O4,L4,C4,k4,D4,M4,I4,B4,j4,F4,N4,z4,U4,G4,W4,H4,V4,Y4,K4,q4,Q4,J4,X4,Z4,$4,e5,t5,n5,r5,i5,o5,e5,s5,l5,c5,u5,d5,f5,h5,p5,m5,g5,v5,y5,b5,E5,x5,_5,w5,T5,S5,A5,R5,P5,O5,L5,C5,k5,D5,M5,I5,B5,j5,F5,N5,z5,U5,G5,W5,H5,V5,Y5,K5,q5,Q5,J5,X5,Z5,$5,e6,t6,n6,r6,i6,o6,e6,s6,l6,c6,u6,d6,f6,h6,p6,m6,g6,v6,y6,b6,E6,x6,_6,w6,T6,S6,A6,R6,P6,O6,L6,C6,k6,D6,M6,I6,B6,j6,F6,N6,z6,U6,G6,W6,H6,V6,Y6,K6,q6,Q6,J6,X6,Z6,$6,e7,t7,n7,r7,i7,o7,e7,s7,l7,c7,u7,d7,f7,h7,p7,m7,g7,v7,y7,b7,E7,x7,_7,w7,T7,S7,A7,R7,P7,O7,L7,C7,k7,D7,M7,I7,B7,j7,F7,N7,z7,U7,G7,W7,H7,V7,Y7,K7,q7,Q7,J7,X7,Z7,$7,e8,t8,n8,r8,i8,o8,e8,s8,l8,c8,u8,d8,f8,h8,p8,m8,g8,v8,y8,b8,E8,x8,_8,w8,T8,S8,A8,R8,P8,O8,L8,C8,k8,D8,M8,I8,B8,j8,F8,N8,z8,U8,G8,W8,H8,V8,Y8,K8,q8,Q8,J8,X8,Z8,$8,e9,t9,n9,r9,i9,o9,e9,s9,l9,c9,u9,d9,f9,h9,p9,m9,g9,v9,y9,b9,E9,x9,_9,w9,T9,S9,A9,R9,P9,O9,L9,C9,k9,D9,M9,I9,B9,j9,F9,N9,z9,U9,G9,W9,H9,V9,Y9,K9,q9,Q9,J9,X9,Z9,$9};t.Color=t.Color||function(e,n,r){return this.set(e,n,r)},t.Color.prototype={constructor:t.Color,isColor:!0,r:0,g:0,b:0,set:function(e){if(e&&e.isColor)this.copy(e);else if("number"==typeof e)this.setHex(e);else if("string"==typeof e)this.setStyle(e);return this},setHex:function(e){return e=parseInt(e,16),this.r=(e>>16&255)/255,this.g=(e>>8&255)/255,this.b=(e&255)/255,this},setRGB:function(e,n,r){return this.r=e,this.g=n,this.b=r,this},setHSL:function(e,n,r){var i=t.MathUtils.hue2rgb,o=t.MathUtils;e=e||0,n=void 0===n?0:n,r=void 0===r?0:r;var a,s,l;if(0===n)a=s=l=r;else{var c=r<=.5?r*(1+n):r+n-r*n,u=2*r-c;a=i(u,c,e+1/3),s=i(u,c,e),l=i(u,c,e-1/3)}return this.r=a,this.g=s,this.b=l,this},setStyle:function(e){function n(e){void 0!==e&&parseFloat(e);var n=/^((?:rgb|hsl)a?)\(([^\)]*)\)/.exec(e),r=n[1],i=n[2];switch(r){case"rgb":case"rgba":var o=/(\d+%?)/g.exec(i),a=o[0],s=o[1],l=o[2];return this.r=a/255,this.g=s/255,this.b=l/255,this;case"hsl":case"hsla":var c=/(\d+%?)/g.exec(i),u=c[0],d=c[1],f=c[2];return this.setHSL(u/360,d/100,f/100),this}}if(e=e.replace(/ /g,""),"#"===e.charAt(0)){var r=e.length;4===r&&(this.r=parseInt(e.charAt(1)+e.charAt(1),16)/255,this.g=parseInt(e.charAt(2)+e.charAt(2),16)/255,this.b=parseInt(e.charAt(3)+e.charAt(3),16)/255),7===r&&(this.r=parseInt(e.charAt(1)+e.charAt(2),16)/255,this.g=parseInt(e.charAt(3)+e.charAt(4),16)/255,this.b
+    // SAFETY: Wait for all scripts
+    if (typeof THREE === 'undefined') {
+      document.getElementById('loading').innerHTML = 'Three.js failed to load 😔<br>Refresh or check connection.';
+      throw new Error('THREE not loaded');
+    }
+
+    // Remove loading
+    document.getElementById('loading').remove();
+
+    // ==============================================================
+    // ALBUMS
+    // ==============================================================
+    const albums = [
+      { title: "Optima Box: The Future Is Inviting", url: "https://on.soundcloud.com/nWSYB7e87sdZaWxtT9", color: 0x00ff88, art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "The future hums in neon leaves..." },
+      { title: "Wisdom Box: As We Learn Cycling", url: "https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj", color: 0xa0ff00, art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..." },
+      { title: "Mystery Box: It Has Always Been Here", url: "https://on.soundcloud.com/NIuOde9LeVrnLcTWCa", color: 0x8844ff, art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg", poem: "Hidden truth beneath the rain..." },
+      { title: "Romantic Box: Premature Farewell", url: "https://on.soundcloud.com/BkPQQv8bqULarvOMtw", color: 0xff4488, art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg", poem: "Ashen hands, I see the stain..." },
+      { title: "Therapy Box: Hello Mailer-Daemon", url: "https://on.soundcloud.com/kmQCqO4ulClTDsQg1O", color: 0x44ccff, art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg", poem: "Tiny heart, the silence grows..." },
+      { title: "Fiesta Box: Fruity Outcome", url: "https://on.soundcloud.com/1vbOMYoRnitq1s6r4o", color: 0xffaa00, art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg", poem: "Each spark remembers where it grew..." },
+      { title: "Energy Box: Time Is Here", url: "https://on.soundcloud.com/QNehEABnSeSodbnKWF", color: 0xffff00, art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..." }
+    ];
+
+    // ==============================================================
+    // THREE.JS SCENE
+    // ==============================================================
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.maxPolarAngle = Math.PI / 2.1;
+    camera.position.set(0, 10, 25);
+
+    const composer = new THREE.EffectComposer(renderer);
+    const renderPass = new THREE.RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.2, 0.4, 0.85);
+    composer.addPass(bloomPass);
+
+    scene.add(new THREE.AmbientLight(0x404060, 0.5));
+    const moon = new THREE.DirectionalLight(0xaaccff, 1.2);
+    moon.position.set(15, 30, 15);
+    scene.add(moon);
+
+    // Sky
+    const sky = new THREE.Mesh(
+      new THREE.SphereGeometry(150, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0x0a0a1a, side: THREE.BackSide })
+    );
+    scene.add(sky);
+
+    // Ground
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 300),
+      new THREE.MeshBasicMaterial({ color: 0x0a1a0a })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -3;
+    scene.add(ground);
+
+    // Gramophone
+    function createGramophone(color) {
+      const group = new THREE.Group();
+      const disc = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.7, 0.7, 0.04, 64),
+        new THREE.MeshBasicMaterial({ color: 0x000000 })
+      );
+      group.add(disc);
+      const horn = new THREE.Mesh(
+        new THREE.ConeGeometry(0.9, 1.4, 12),
+        new THREE.MeshBasicMaterial({ color: color })
+      );
+      horn.position.z = 0.9;
+      horn.rotation.x = Math.PI / 2;
+      group.add(horn);
+      group.userData.type = 'fruit';
+      return group;
+    }
+
+    // Tree
+    function createTree(album, x, z) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.8, 7, 8),
+        new THREE.MeshBasicMaterial({ color: 0x3d2817 })
+      );
+      trunk.position.y = 2;
+      tree.add(trunk);
+      const leaves = new THREE.Mesh(
+        new THREE.SphereGeometry(3, 8, 6),
+        new THREE.MeshBasicMaterial({ color: 0x0a2a0a })
+      );
+      leaves.position.y = 5;
+      tree.add(leaves);
+      for (let i = 0; i < 3; i++) {
+        const fruit = createGramophone(album.color);
+        const angle = (i / 3) * Math.PI * 2;
+        fruit.position.set(Math.cos(angle) * 2.5, 5.5, Math.sin(angle) * 2.5);
+        fruit.userData.album = album;
+        fruit.userData.rotSpeed = 0.5;
+        tree.add(fruit);
+      }
+      tree.position.set(x, 0, z);
+      scene.add(tree);
+      return tree;
+    }
+
+    // Place trees
+    const trees = [];
+    albums.forEach((album, i) => {
+      const angle = (i / albums.length) * Math.PI * 2;
+      const dist = 14;
+      const x = Math.cos(angle) * dist;
+      const z = Math.sin(angle) * dist;
+      trees.push(createTree(album, x, z));
+    });
+
+    // Interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const tooltip = document.getElementById('tooltip');
+    let hovered = null;
+
+    window.addEventListener('mousemove', e => {
+      mouse.x = (e.clientX / innerWidth) * 2 - 1;
+      mouse.y = -(e.clientHeight / innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+      let found = null;
+      for (let hit of intersects) {
+        if (hit.object.parent && hit.object.parent.userData.type === 'fruit') {
+          found = hit.object.parent;
+          break;
+        }
+      }
+      if (found !== hovered) {
+        if (hovered) hovered.scale.set(1,1,1);
+        hovered = found;
+        if (hovered) {
+          const al = hovered.userData.album;
+          tooltip.textContent = al.title;
+          tooltip.style.left = (e.clientX + 15) + 'px';
+          tooltip.style.top = (e.clientY + 15) + 'px';
+          tooltip.style.opacity = 1;
+          hovered.scale.set(1.2, 1.2, 1.2);
+        } else {
+          tooltip.style.opacity = 0;
+        }
+      }
+    });
+
+    window.addEventListener('click', () => {
+      if (hovered) {
+        const a = hovered.userData.album;
+        document.getElementById('album-title').textContent = a.title;
+        document.getElementById('album-art').src = a.art;
+        document.getElementById('player-container').innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${a.url}&color=%235ab&auto_play=false"></iframe>`;
+        document.getElementById('album-panel').style.display = 'block';
+      }
+    });
+
+    document.querySelector('.close-btn').onclick = () => {
+      document.getElementById('album-panel').style.display = 'none';
+    };
+
+    // Animation
+    function animate() {
+      requestAnimationFrame(animate);
+      trees.forEach(tree => {
+        tree.children.forEach(child => {
+          if (child.userData.rotSpeed) child.rotation.y += child.userData.rotSpeed * 0.01;
+        });
+      });
+      controls.update();
+      composer.render();
+    }
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      composer.setSize(innerWidth, innerHeight);
+    });
+
+    console.log('FOREST LOADED! 🎉');
+  </script>
+</body>
+</html>
