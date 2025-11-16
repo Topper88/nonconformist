@@ -17,14 +17,11 @@
     .reward { font-size:12px; color:#8cf; margin-top:12px; }
     canvas { display:block; }
     #keys { position:absolute; bottom:20px; left:20px; color:#aaa; font-size:12px; z-index:10; }
+    #mouse-info { position:absolute; bottom:20px; right:20px; color:#aaa; font-size:12px; z-index:10; }
   </style>
 
-  <!-- STABLE THREE.JS (r134) -->
+  <!-- CORE THREE.JS ONLY (reliable CDN) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/UnrealBloomPass.js"></script>
 </head>
 <body>
   <div id="overlay">
@@ -36,7 +33,8 @@
       <a href="#" target="_blank">Reward if it moves you</a>
     </div>
     <div class="tooltip" id="tooltip"></div>
-    <div id="keys" style="display:none;">WASD: Fly | Mouse: Look</div>
+    <div id="keys">WASD: Fly | Drag: Orbit | Scroll: Zoom</div>
+    <div id="mouse-info">Click & drag to orbit</div>
   </div>
 
   <div id="album-panel" class="album-panel">
@@ -51,51 +49,93 @@
   </div>
 
   <script>
-    // SAFE CHECK FOR ORBITCONTROLS
-    let controls;
-    let hasOrbit = false;
-    try {
-      controls = new THREE.OrbitControls(camera, renderer.domElement); // This line will fail if not constructor
-      hasOrbit = true;
-    } catch (e) {
-      console.warn('OrbitControls failed — using free fly mode:', e);
-      document.getElementById('keys').style.display = 'block';
-      // FALLBACK: Free camera with WASD + mouse
-      const keys = {};
-      window.addEventListener('keydown', e => keys[e.code] = true);
-      window.addEventListener('keyup', e => keys[e.code] = false);
-      const mouseLook = new THREE.Vector2();
-      let isMouseDown = false;
-      window.addEventListener('mousedown', () => isMouseDown = true);
-      window.addEventListener('mouseup', () => isMouseDown = false);
-      window.addEventListener('mousemove', e => {
-        if (isMouseDown) {
-          mouseLook.x -= e.movementX * 0.002;
-          mouseLook.y -= e.movementY * 0.002;
-          camera.rotation.order = 'YXZ';
-          camera.rotation.y = mouseLook.x;
-          camera.rotation.x = mouseLook.y;
-        }
-      });
-      // Fly logic in animate()
-      function updateFly() {
-        const speed = 0.5;
-        const dir = new THREE.Vector3();
-        if (keys['KeyW']) dir.z -= speed;
-        if (keys['KeyS']) dir.z += speed;
-        if (keys['KeyA']) dir.x -= speed;
-        if (keys['KeyD']) dir.x += speed;
-        if (keys['Space']) camera.position.y += speed;
-        if (keys['ShiftLeft']) camera.position.y -= speed;
-        camera.translateX(dir.x);
-        camera.translateY(dir.y);
-        camera.translateZ(dir.z);
+    // MANUAL CAMERA CONTROLS (no external deps)
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    camera.position.set(0, 10, 25);
+
+    // Manual Orbit (drag mouse)
+    let isDragging = false;
+    let previousMouse = { x: 0, y: 0 };
+    const phi = Math.PI / 2; // Initial polar angle
+    const theta = 0; // Initial azimuthal angle
+    let radius = 25; // Distance from target
+
+    renderer.domElement.addEventListener('mousedown', (e) => { isDragging = true; previousMouse.x = e.clientX; previousMouse.y = e.clientY; });
+    renderer.domElement.addEventListener('mouseup', () => { isDragging = false; });
+    renderer.domElement.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const deltaX = e.clientX - previousMouse.x;
+        const deltaY = e.clientY - previousMouse.y;
+        theta -= deltaX * 0.01;
+        phi += deltaY * 0.01;
+        phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi)); // Clamp vertical
+        updateCamera();
+        previousMouse.x = e.clientX;
+        previousMouse.y = e.clientY;
       }
+    });
+
+    // Mouse wheel zoom
+    renderer.domElement.addEventListener('wheel', (e) => {
+      radius += e.deltaY * 0.05;
+      radius = Math.max(5, Math.min(50, radius));
+      updateCamera();
+    });
+
+    function updateCamera() {
+      camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+      camera.position.y = radius * Math.cos(phi);
+      camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+      camera.lookAt(0, 2, 0); // Look at center
     }
 
-    // ==============================================================
-    // ALBUMS (same as before)
-    // ==============================================================
+    // WASD Fly (bonus)
+    const keys = {};
+    window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+    function updateFly() {
+      const speed = 0.2;
+      const dir = new THREE.Vector3();
+      if (keys['KeyW']) dir.z -= speed;
+      if (keys['KeyS']) dir.z += speed;
+      if (keys['KeyA']) dir.x -= speed;
+      if (keys['KeyD']) dir.x += speed;
+      if (keys['Space']) camera.position.y += speed;
+      if (keys['ShiftLeft']) camera.position.y -= speed;
+      camera.translateX(dir.x);
+      camera.translateY(dir.y);
+      camera.translateZ(dir.z);
+    }
+
+    // Lighting & Sky (simple)
+    scene.add(new THREE.AmbientLight(0x404060, 0.6));
+    const moon = new THREE.DirectionalLight(0xaaccff, 0.8);
+    moon.position.set(15, 30, 15);
+    scene.add(moon);
+
+    const sky = new THREE.Mesh(
+      new THREE.SphereGeometry(150, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0x0a0a1a, side: THREE.BackSide })
+    );
+    scene.add(sky);
+
+    // Ground
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 300),
+      new THREE.MeshBasicMaterial({ color: 0x0a1a0a })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -3;
+    scene.add(ground);
+
+    // Albums
     const albums = [
       { title: "Optima Box: The Future Is Inviting", url: "https://on.soundcloud.com/nWSYB7e87sdZaWxtT9", color: 0x00ff88, art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "The future hums in neon leaves..." },
       { title: "Wisdom Box: As We Learn Cycling", url: "https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj", color: 0xa0ff00, art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..." },
@@ -106,48 +146,7 @@
       { title: "Energy Box: Time Is Here", url: "https://on.soundcloud.com/QNehEABnSeSodbnKWF", color: 0xffff00, art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..." }
     ];
 
-    // Scene (same setup)
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    document.body.appendChild(renderer.domElement);
-
-    if (hasOrbit) {
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.07;
-      controls.maxPolarAngle = Math.PI / 2.1;
-    }
-    camera.position.set(0, 10, 25);
-
-    const composer = new THREE.EffectComposer(renderer);
-    const renderPass = new THREE.RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.85);
-    composer.addPass(bloomPass);
-
-    scene.add(new THREE.AmbientLight(0x404060, 0.5));
-    const moon = new THREE.DirectionalLight(0xaaccff, 1.2);
-    moon.position.set(15, 30, 15);
-    scene.add(moon);
-
-    const sky = new THREE.Mesh(
-      new THREE.SphereGeometry(150, 32, 32),
-      new THREE.MeshBasicMaterial({ color: 0x0a0a1a, side: THREE.BackSide })
-    );
-    scene.add(sky);
-
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(300, 300),
-      new THREE.MeshBasicMaterial({ color: 0x0a1a0a })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -3;
-    scene.add(ground);
-
-    // Gramophone & Tree (same)
+    // Gramophone
     function createGramophone(color) {
       const group = new THREE.Group();
       const disc = new THREE.Mesh(
@@ -166,6 +165,7 @@
       return group;
     }
 
+    // Tree
     function createTree(album, x, z) {
       const tree = new THREE.Group();
       const trunk = new THREE.Mesh(
@@ -193,6 +193,7 @@
       return tree;
     }
 
+    // Place Trees
     const trees = [];
     albums.forEach((album, i) => {
       const angle = (i / albums.length) * Math.PI * 2;
@@ -202,7 +203,7 @@
       trees.push(createTree(album, x, z));
     });
 
-    // Interaction (same)
+    // Raycaster for Hover/Click
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -252,21 +253,18 @@
       document.getElementById('album-panel').style.display = 'none';
     };
 
-    // Animation
+    // Animation Loop
     function animate() {
       requestAnimationFrame(animate);
       trees.forEach(tree => {
         tree.children.forEach(obj => {
-          if (obj.userData.rotSpeed) obj.rotation.y += 0.01;
+          if (obj.userData.rotSpeed) obj.rotation.y += obj.userData.rotSpeed * 0.01;
         });
       });
-      if (hasOrbit) {
-        controls.update();
-      } else {
-        updateFly(); // Fallback fly
-      }
-      composer.render();
+      updateFly(); // Always enable fly
+      renderer.render(scene, camera);
     }
+    updateCamera(); // Initial position
     animate();
 
     // Resize
@@ -274,10 +272,9 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      composer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    console.log('Forest loaded! 🎉 Orbit:', hasOrbit ? 'Yes' : 'Fly mode');
+    console.log('Forest loaded! 🎉 Manual controls active.');
   </script>
 </body>
 </html>
