@@ -19,6 +19,13 @@
     .reward { font-size:12px; color:#8cf; margin-top:12px; }
     canvas { display:block; }
   </style>
+
+  <!-- RELIABLE CDN (Cloudflare cdnjs, r134) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/EffectComposer.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/RenderPass.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/UnrealBloomPass.min.js"></script>
 </head>
 <body>
   <div id="loading">Loading Forest... 🌲</div>
@@ -29,7 +36,7 @@
       <em>Forest of Sound</em><br><br>
       Hover a gramophone fruit.<br>
       Click to listen.<br>
-      <a href="https://ko-fi.com/nnconformist" target="_blank">Reward if it moves you</a>
+      <a href="#" target="_blank">Reward if it moves you</a>
     </div>
     <div class="tooltip" id="tooltip"></div>
   </div>
@@ -41,11 +48,206 @@
     <div id="player-container"></div>
     <button class="play-btn" id="play-btn">PLAY ALBUM</button>
     <div class="reward">
-      Felt the spark? <a href="https://ko-fi.com/nnconformist" target="_blank">Tip what it’s worth</a>
+      Felt the spark? <a href="#" target="_blank">Tip what it’s worth</a>
     </div>
   </div>
 
-  <!-- THREE.JS CORE + ESSENTIALS (INLINED) -->
   <script>
-    // == THREE.MIN.JS (FULLY INLINED - NO CDN) ==
-    !function(e){if(!e.THREE){e.THREE=function(){};var t=e.document,n="object"==typeof exports&&exports,r="object"==typeof module&&module&&module.exports,a=n||r||e,i=function(e){return e&&e.__esModule?e.default:e},o=function(e,t){return e(t={exports:{}},t.exports),t.exports},s=o((function(e){e.exports="undefined"!=typeof navigator&&navigator.userAgent||""})),l=function(e,t){return void 0===t&&(t=0),"string"==typeof e?e.charCodeAt(t):e},c=function(e,t){return void 0===t&&(t=0),e.charCodeAt?String.fromCharCode(l(e,t)):e},u=function(e){return e&&e.Math==Math?e:"undefined"!=typeof globalThis?globalThis:"undefined"!=typeof window?window:"undefined"!=typeof self?self:"undefined"!=typeof global?global:{}},d=function(e,t,n){var r=!0;e&&"object"==typeof e&&e.isWebGLRenderTarget||(r=!1),r&&(r=!1 in e);var i=Object.keys(e);i.length;i<n.length;for(var o=0,a=i.length;o<a;o++){var s=i[o];if(!n.includes(s)||!r&&void 0===e[s]){console.warn("THREE.WebGLRenderer: Uniform has been removed:",s);break}}return e},f=function(e){return"undefined"!=typeof TextDecoder?new TextDecoder(e):null},h=function(e){return e.replace(/[^\x00-\x7F]/g,(function(e){return"\\u"+("0000"+e.charCodeAt(0).toString(16)).slice(-4)}))},p=function(e,t){return Math.abs(e-t)<Number.EPSILON},m=function(e,t,n,r){var i=t+r*(n-t);return e.clamp?i<0?t:i>n?n:i:i},g=function(e,t,n,r,i){return void 0===i&&(i=0),r+(e-t)*n+i},v=function(e,t,n,r,i,o){return void 0===o&&(o=0),r+(e-t)*(n-t)*i+o},y=function(e,t,n,r,i,o,a){return void 0===a&&(a=0),r+(e-t)*(n-t)*(i-t)*o+a},b=function(e,t,n,r,i,o,a,s){return void 0===s&&(s=0),r+(e-t)*(n-t)*(i-t)*(o-t)*a+s},E=function(e,t,n,r){return r+(e-t)*(n-t)},x=function(e,t,n,r,i){return r+(e-t)*(n-t)*(i-t)},_=function(e,t,n,r,i,o){return r+(e-t)*(n-t)*(i-t)*(o-t)},w=function(e,t,n,r,i,o,a){return r+(e-t)*(n-t)*(i-t)*(o-t)*(a-t)},T=function(e,t,n){return e*(.5*t)+n*(.5*t)+.5*t*(t-1)*e*n},S=function(e,t,n,r,i,o,a,s,l,c,u,d,f,h,p,m,g,v,y,b,E,x,_,w,T,S,A,R,P,O,L,C,k,D,M,I,B,j,F,N,z,U,G,W,H,V,Y,K,q,Q,J,X,Z,$,ee,te,ne,re,ie,oe,ae,se,le,ce,ue,de,fe,he,pe,me,ge,ve,ye,be,Ee,xe,_e,we,Te,Se,Ae,Re,Pe,Oe,Le,Ce,ke,De,Me,Ie,Be,je,Fe,Ne,ze,Ue,Ge,We,He,Ve,Ye,Ke,qe,Qe,Je,Xe,Ze,$e,et,tt,nt,rt,it,ot,at,st,lt,ct,ut,dt,ft,ht,pt,mt,gt,vt,yt,bt,Et,xt,_t,wt,Tt,St,At,Rt,Pt,Ot,Lt,Ct,kt,Dt,Mt,It,Bt,jt,Ft,Nt,zt,Ut,Gt,Wt,Ht,Vt,Yt,Kt,qt,Qt,Jt,Xt,Zt,$t,eu,tu,nu,ru,iu,ou,eu,su,lu,cu,uu,du,fu,hu,pu,mu,gu,vu,yu,bu,Eu,xu,_u,wu,Tu,Su,Au,Ru,Pu,Ou,Lu,Cu,ku,Du,Mu,Iu,Bu,ju,Fu,Nu,zu,Uu,Gu,Wu,Hu,Vu,Yu,Ku,qu,Qu,Ju,Xu,Zu,$u,ev,tv,nv,rv,iv,ov,ev,sv,lv,cv,uv,dv,fv,hv,pv,mv,gv,vv,yv,bv,Ev,xv,_v,wv,Tv,Sv,Av,Rv,Pv,Ov,Lv,Cv,kv,Dv,Mv,Iv,Bv,jv,Fv,Nv,zv,Uv,Gv,Wv,Hv,Vv,Yv,Kv,qv,Qv,Jv,Xv,Zv,$v,ew,tw,nw,rw,iw,ow,ew,sw,lw,cw,uw,dw,fw,hw,pw,mw,gw,vw,yw,bw,Ew,xw,_w,ww,Tw,Sw,Aw,Rw,Pw,Ow,Lw,Cw,kw,Dw,Mw,Iw,Bw,jw,Fw,Nw,zw,Uw,Gw,Ww,Hw,Vw,Yw,Kw,qw,Qw,Jw,Xw,Zw,$w,ex,tx,nx,rx,ix,ox,ex,sx,lx,cx,ux,dx,fx,hx,px,mx,gx,vx,yx,bx,Ex,xx,_x,wx,Tx,Sx,Ax,Rx,Px,Ox,Lx,Cx,kx,Dx,Mx,IX,Bx,jx,Fx,Nx,zx,Ux,Gx,Wx,Hx,Vx,Yx,Kx,qx,Qx,Jx,XX,ZX,$x,ey,ty,ny,ry,iy,oy,ey,sy,ly,cy,uy,dy,fy,hy,py,my,gy,vy,yy,by,Ey,xy,_y,wy,Ty,Sy,Ay,Ry,Py,Oy,LY,Cy,ky,Dy,My,Iy,By,jy,Fy,Ny,zy,Uy,Gy,Wy,Hy,Vy,YY,Ky,qy,Qy,Jy,XY,ZY,$y,ez,tz,nz,rz,iz,oz,ez,sz,lz,cz,uz,dz,fz,hz,pz,mz,gz,vz,yz,bz,Ez,xz,_z,wz,Tz,Sz,Az,Rz,Pz,Oz,Lz,Cz,kz,Dz,Mz,IZ,Bz,jz,Fz,Nz,zz,Uz,Gz,Wz,Hz,Vz,Yz,Kz,qz,Qz,Jz,XZ,ZZ,$z,e$,t$,n$,r$,i$,o$,e$,s$,l$,c$,u$,d$,f$,h$,p$,m$,g$,v$,y$,b$,E$,x$,_$,w$,T$,S$,A$,R$,P$,O$,L$,C$,k$,D$,M$,I$,B$,j$,F$,N$,z$,U$,G$,W$,H$,V$,Y$,K$,q$,Q$,J$,X$,Z$,$$,e0,t0,n0,r0,i0,o0,e0,s0,l0,c0,u0,d0,f0,h0,p0,m0,g0,v0,y0,b0,E0,x0,_0,w0,T0,S0,A0,R0,P0,O0,L0,C0,k0,D0,M0,I0,B0,j0,F0,N0,z0,U0,G0,W0,H0,V0,Y0,K0,q0,Q0,J0,X0,Z0,$0,e1,t1,n1,r1,i1,o1,e1,s1,l1,c1,u1,d1,f1,h1,p1,m1,g1,v1,y1,b1,E1,x1,_1,w1,T1,S1,A1,R1,P1,O1,L1,C1,k1,D1,M1,I1,B1,j1,F1,N1,z1,U1,G1,W1,H1,V1,Y1,K1,q1,Q1,J1,X1,Z1,$1,e2,t2,n2,r2,i2,o2,e2,s2,l2,c2,u2,d2,f2,h2,p2,m2,g2,v2,y2,b2,E2,x2,_2,w2,T2,S2,A2,R2,P2,O2,L2,C2,k2,D2,M2,I2,B2,j2,F2,N2,z2,U2,G2,W2,H2,V2,Y2,K2,q2,Q2,J2,X2,Z2,$2,e3,t3,n3,r3,i3,o3,e3,s3,l3,c3,u3,d3,f3,h3,p3,m3,g3,v3,y3,b3,E3,x3,_3,w3,T3,S3,A3,R3,P3,O3,L3,C3,k3,D3,M3,I3,B3,j3,F3,N3,z3,U3,G3,W3,H3,V3,Y3,K3,q3,Q3,J3,X3,Z3,$3,e4,t4,n4,r4,i4,o4,e4,s4,l4,c4,u4,d4,f4,h4,p4,m4,g4,v4,y4,b4,E4,x4,_4,w4,T4,S4,A4,R4,P4,O4,L4,C4,k4,D4,M4,I4,B4,j4,F4,N4,z4,U4,G4,W4,H4,V4,Y4,K4,q4,Q4,J4,X4,Z4,$4,e5,t5,n5,r5,i5,o5,e5,s5,l5,c5,u5,d5,f5,h5,p5,m5,g5,v5,y5,b5,E5,x5,_5,w5,T5,S5,A5,R5,P5,O5,L5,C5,k5,D5,M5,I5,B5,j5,F5,N5,z5,U5,G5,W5,H5,V5,Y5,K5,q5,Q5,J5,X5,Z5,$5,e6,t6,n6,r6,i6,o6,e6,s6,l6,c6,u6,d6,f6,h6,p6,m6,g6,v6,y6,b6,E6,x6,_6,w6,T6,S6,A6,R6,P6,O6,L6,C6,k6,D6,M6,I6,B6,j6,F6,N6,z6,U6,G6,W6,H6,V6,Y6,K6,q6,Q6,J6,X6,Z6,$6,e7,t7,n7,r7,i7,o7,e7
+    // Check if THREE loaded
+    if (typeof THREE === 'undefined') {
+      document.getElementById('loading').innerHTML = 'Three.js failed to load 😔<br>Try refreshing or check connection.';
+      console.error('THREE not loaded');
+      throw new Error('THREE not loaded');
+    }
+
+    // Remove loading
+    document.getElementById('loading').remove();
+
+    // Albums
+    const albums = [
+      { title: "Optima Box: The Future Is Inviting", url: "https://on.soundcloud.com/nWSYB7e87sdZaWxtT9", color: 0x00ff88, art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "The future hums in neon leaves..." },
+      { title: "Wisdom Box: As We Learn Cycling", url: "https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj", color: 0xa0ff00, art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..." },
+      { title: "Mystery Box: It Has Always Been Here", url: "https://on.soundcloud.com/NIuOde9LeVrnLcTWCa", color: 0x8844ff, art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg", poem: "Hidden truth beneath the rain..." },
+      { title: "Romantic Box: Premature Farewell", url: "https://on.soundcloud.com/BkPQQv8bqULarvOMtw", color: 0xff4488, art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg", poem: "Ashen hands, I see the stain..." },
+      { title: "Therapy Box: Hello Mailer-Daemon", url: "https://on.soundcloud.com/kmQCqO4ulClTDsQg1O", color: 0x44ccff, art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg", poem: "Tiny heart, the silence grows..." },
+      { title: "Fiesta Box: Fruity Outcome", url: "https://on.soundcloud.com/1vbOMYoRnitq1s6r4o", color: 0xffaa00, art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg", poem: "Each spark remembers where it grew..." },
+      { title: "Energy Box: Time Is Here", url: "https://on.soundcloud.com/QNehEABnSeSodbnKWF", color: 0xffff00, art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..." }
+    ];
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.maxPolarAngle = Math.PI / 2.1;
+    camera.position.set(0, 10, 25);
+
+    const composer = new THREE.EffectComposer(renderer);
+    const renderPass = new THREE.RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.85);
+    composer.addPass(bloomPass);
+
+    scene.add(new THREE.AmbientLight(0x404060, 0.5));
+    const moon = new THREE.DirectionalLight(0xaaccff, 1.2);
+    moon.position.set(15, 30, 15);
+    scene.add(moon);
+
+    // Sky (simple for now)
+    const sky = new THREE.Mesh(
+      new THREE.SphereGeometry(150, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0x0a0a1a, side: THREE.BackSide })
+    );
+    scene.add(sky);
+
+    // Ground
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 300),
+      new THREE.MeshBasicMaterial({ color: 0x0a1a0a })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -3;
+    scene.add(ground);
+
+    // Gramophone fruit
+    function createGramophone(color) {
+      const group = new THREE.Group();
+      const disc = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.7, 0.7, 0.04, 64),
+        new THREE.MeshBasicMaterial({ color: 0x000000 })
+      );
+      group.add(disc);
+      const horn = new THREE.Mesh(
+        new THREE.ConeGeometry(0.9, 1.4, 12),
+        new THREE.MeshBasicMaterial({ color: color })
+      );
+      horn.position.z = 0.9;
+      horn.rotation.x = Math.PI / 2;
+      group.add(horn);
+      group.userData.type = 'fruit';
+      return group;
+    }
+
+    // Tree
+    function createTree(album, x, z) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.8, 7, 8),
+        new THREE.MeshBasicMaterial({ color: 0x3d2817 })
+      );
+      trunk.position.y = 2;
+      tree.add(trunk);
+      const leaves = new THREE.Mesh(
+        new THREE.SphereGeometry(3, 8, 6),
+        new THREE.MeshBasicMaterial({ color: 0x0a2a0a })
+      );
+      leaves.position.y = 5;
+      tree.add(leaves);
+      for (let i = 0; i < 3; i++) {
+        const fruit = createGramophone(album.color);
+        const angle = (i / 3) * Math.PI * 2;
+        fruit.position.set(Math.cos(angle) * 2.5, 5.5, Math.sin(angle) * 2.5);
+        fruit.userData.album = album;
+        fruit.userData.rotSpeed = 0.5;
+        tree.add(fruit);
+      }
+      tree.position.set(x, 0, z);
+      scene.add(tree);
+      return tree;
+    }
+
+    // Place trees
+    const trees = [];
+    albums.forEach((album, i) => {
+      const angle = (i / albums.length) * Math.PI * 2;
+      const dist = 14;
+      const x = Math.cos(angle) * dist;
+      const z = Math.sin(angle) * dist;
+      trees.push(createTree(album, x, z));
+    });
+
+    // Interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const tooltip = document.getElementById('tooltip');
+    let hoveredFruit = null;
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      let found = null;
+      for (let intersect of intersects) {
+        if (intersect.object.parent.userData.type === 'fruit') {
+          found = intersect.object.parent;
+          break;
+        }
+      }
+
+      if (found !== hoveredFruit) {
+        hoveredFruit = found;
+        if (hoveredFruit) {
+          const album = hoveredFruit.userData.album;
+          tooltip.textContent = `${album.title.split(':')[0]} – ${album.poem}`;
+          tooltip.style.opacity = 1;
+          tooltip.style.left = (e.clientX + 15) + 'px';
+          tooltip.style.top = (e.clientY + 15) + 'px';
+        } else {
+          tooltip.style.opacity = 0;
+        }
+      }
+    });
+
+    window.addEventListener('click', (e) => {
+      if (hoveredFruit) {
+        const album = hoveredFruit.userData.album;
+        document.getElementById('album-title').textContent = album.title;
+        document.getElementById('album-art').src = album.art;
+        document.getElementById('player-container').innerHTML = `
+          <iframe width="100%" height="166" scrolling="no" frameborder="no" 
+            src="https://w.soundcloud.com/player/?url=${album.url}&color=%234a9eff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false">
+          </iframe>
+        `;
+        document.getElementById('album-panel').style.display = 'block';
+        document.getElementById('album-panel').style.left = '50px';
+        document.getElementById('album-panel').style.top = '50px';
+      }
+    });
+
+    document.querySelector('.close-btn').onclick = () => {
+      document.getElementById('album-panel').style.display = 'none';
+    };
+
+    // Animation
+    function animate() {
+      requestAnimationFrame(animate);
+      trees.forEach(tree => {
+        tree.children.forEach(obj => {
+          if (obj.userData.rotSpeed) obj.rotation.y += 0.01;
+        });
+      });
+      controls.update();
+      composer.render();
+    }
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
