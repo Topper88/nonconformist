@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>п o п c o п f o r m i s t | Forest of Sound</title>
 
-  <!-- THREE.JS + WORKING EXTRAS -->
-  <script src="https://unpkg.com/three@0.167.1/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.167.1/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <!-- LOAD THREE.JS SAFELY -->
+  <script src="https://unpkg.com/three@0.167.1/build/three.min.js" defer></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/controls/OrbitControls.js" defer></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/EffectComposer.js" defer></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/RenderPass.js" defer></script>
+  <script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/UnrealBloomPass.js" defer></script>
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -25,16 +25,19 @@
     .play-btn { background:#5ab; color:#fff; border:none; padding:14px; margin:16px 0; border-radius:10px; cursor:pointer; font-weight:bold; width:100%; font-size:16px; }
     .reward { font-size:12px; color:#8cf; margin-top:12px; }
     canvas { display:block; }
+    #loading { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:18px; z-index:5; }
   </style>
 </head>
 <body>
+  <div id="loading">Loading Forest... 🌲</div>
+
   <div id="overlay">
     <div id="info">
       <strong>п o п c o п f o r m i s t</strong><br>
       <em>Forest of Sound</em><br><br>
       Hover a gramophone fruit.<br>
       Click to listen.<br>
-      <a href="https://ko-fi.com/yourkofi" target="_blank">Reward if it moves you.</a>
+      <a href="#" target="_blank">Reward if it moves you (add link later)</a>
     </div>
     <div class="tooltip" id="tooltip"></div>
   </div>
@@ -46,322 +49,177 @@
     <div id="player-container"></div>
     <button class="play-btn" id="play-btn">PLAY ALBUM</button>
     <div class="reward">
-      Felt the spark? <a href="https://ko-fi.com/yourkofi" target="_blank">Tip what it’s worth</a>
+      Felt the spark? <a href="#" target="_blank">Tip what it’s worth (later)</a>
     </div>
   </div>
 
-  <script>
-    // ==============================================================
-    // CONFIG: YOUR 7 ALBUMS
-    // ==============================================================
-    const albums = [
-      { title: "Optima Box: The Future Is Inviting", url: "https://on.soundcloud.com/nWSYB7e87sdZaWxtT9", color: 0x00ff88, art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "The future hums in neon leaves..." },
-      { title: "Wisdom Box: As We Learn Cycling", url: "https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj", color: 0xa0ff00, art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..." },
-      { title: "Mystery Box: It Has Always Been Here", url: "https://on.soundcloud.com/NIuOde9LeVrnLcTWCa", color: 0x8844ff, art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg", poem: "Hidden truth beneath the rain..." },
-      { title: "Romantic Box: Premature Farewell", url: "https://on.soundcloud.com/BkPQQv8bqULarvOMtw", color: 0xff4488, art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg", poem: "Ashen hands, I see the stain..." },
-      { title: "Therapy Box: Hello Mailer-Daemon", url: "https://on.soundcloud.com/kmQCqO4ulClTDsQg1O", color: 0x44ccff, art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg", poem: "Tiny heart, the silence grows..." },
-      { title: "Fiesta Box: Fruity Outcome", url: "https://on.soundcloud.com/1vbOMYoRnitq1s6r4o", color: 0xffaa00, art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg", poem: "Each spark remembers where it grew..." },
-      { title: "Energy Box: Time Is Here", url: "https://on.soundcloud.com/QNehEABnSeSodbnKWF", color: 0xffff00, art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..." }
-    ];
+  <!-- MAIN SCRIPT: RUNS ONLY AFTER THREE.JS LOADS -->
+  <script defer>
+    // Wait for THREE to load
+    window.addEventListener('load', () => {
+      if (typeof THREE === 'undefined') {
+        document.getElementById('loading').innerHTML = 'Failed to load Three.js 😔<br>Try refreshing.';
+        console.error('THREE.js not loaded');
+        return;
+      }
 
-    // ==============================================================
-    // THREE.JS SETUP
-    // ==============================================================
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.setPixelRatio(devicePixelRatio);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    document.body.appendChild(renderer.domElement);
+      document.getElementById('loading').remove();
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.07;
-    controls.maxPolarAngle = Math.PI / 2.1;
-    camera.position.set(0, 10, 25);
+      // ==============================================================
+      // YOUR FULL FOREST CODE STARTS HERE
+      // ==============================================================
 
-    // ----- POST-PROCESSING -----
-    const composer = new THREE.EffectComposer(renderer);
-    const renderPass = new THREE.RenderPass(scene, camera);
-    composer.addPass(renderPass);
+      const albums = [
+        { title: "Optima Box: The Future Is Inviting", url: "https://on.soundcloud.com/nWSYB7e87sdZaWxtT9", color: 0x00ff88, art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "The future hums in neon leaves..." },
+        { title: "Wisdom Box: As We Learn Cycling", url: "https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj", color: 0xa0ff00, art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..." },
+        { title: "Mystery Box: It Has Always Been Here", url: "https://on.soundcloud.com/NIuOde9LeVrnLcTWCa", color: 0x8844ff, art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg", poem: "Hidden truth beneath the rain..." },
+        { title: "Romantic Box: Premature Farewell", url: "https://on.soundcloud.com/BkPQQv8bqULarvOMtw", color: 0xff4488, art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg", poem: "Ashen hands, I see the stain..." },
+        { title: "Therapy Box: Hello Mailer-Daemon", url: "https://on.soundcloud.com/kmQCqO4ulClTDsQg1O", color: 0x44ccff, art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg", poem: "Tiny heart, the silence grows..." },
+        { title: "Fiesta Box: Fruity Outcome", url: "https://on.soundcloud.com/1vbOMYoRnitq1s6r4o", color: 0xffaa00, art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg", poem: "Each spark remembers where it grew..." },
+        { title: "Energy Box: Time Is Here", url: "https://on.soundcloud.com/QNehEABnSeSodbnKWF", color: 0xffff00, art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..." }
+      ];
 
-    const bloomPass = new THREE.UnrealBloomPass(
-      new THREE.Vector2(innerWidth, innerHeight),
-      1.2,   // strength
-      0.4,   // radius
-      0.85   // threshold
-    );
-    composer.addPass(bloomPass);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setPixelRatio(devicePixelRatio);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      document.body.appendChild(renderer.domElement);
 
-    // ----- LIGHTING -----
-    const ambient = new THREE.AmbientLight(0x404060, 0.5);
-    scene.add(ambient);
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+      controls.maxPolarAngle = Math.PI / 2.1;
+      camera.position.set(0, 10, 25);
 
-    const moon = new THREE.DirectionalLight(0xaaccff, 1.2);
-    moon.position.set(15, 30, 15);
-    scene.add(moon);
+      const composer = new THREE.EffectComposer(renderer);
+      const renderPass = new THREE.RenderPass(scene, camera);
+      composer.addPass(renderPass);
+      const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.2, 0.4, 0.85);
+      composer.addPass(bloomPass);
 
-    // ----- SKY GRADIENT (animated) -----
-    const skyGeo = new THREE.SphereGeometry(150, 32, 32);
-    const skyMat = new THREE.ShaderMaterial({
-      vertexShader: `
-        varying vec3 vWorldPosition;
-        void main() {
-          vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vWorldPosition;
-        uniform float time;
-        void main() {
-          float t = time * 0.05;
-          vec3 night = vec3(0.05, 0.05, 0.15);
-          vec3 dawn = vec3(0.3, 0.2, 0.4);
-          vec3 color = mix(night, dawn, sin(t) * 0.5 + 0.5);
-          gl_FragColor = vec4(color, 1.0);
-        }
-      `,
-      uniforms: { time: { value: 0 } },
-      side: THREE.BackSide
-    });
-    const sky = new THREE.Mesh(skyGeo, skyMat);
-    scene.add(sky);
+      // Lighting
+      scene.add(new THREE.AmbientLight(0x404060, 0.5));
+      const moon = new THREE.DirectionalLight(0xaaccff, 1.2);
+      moon.position.set(15, 30, 15);
+      scene.add(moon);
 
-    // ----- GROUND -----
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(300, 300),
-      new THREE.MeshStandardMaterial({ color: 0x0a1a0a, roughness: 1 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -3;
-    scene.add(ground);
-
-    // ----- PARTICLE MIST -----
-    const mistParticles = new THREE.BufferGeometry();
-    const mistCount = 3000;
-    const posArray = new Float32Array(mistCount * 3);
-    const scaleArray = new Float32Array(mistCount);
-    for (let i = 0; i < mistCount; i++) {
-      posArray[i*3]   = (Math.random() - 0.5) * 100;
-      posArray[i*3+1] = Math.random() * 20;
-      posArray[i*3+2] = (Math.random() - 0.5) * 100;
-      scaleArray[i]   = Math.random() * 0.5 + 0.2;
-    }
-    mistParticles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    mistParticles.setAttribute('scale', new THREE.BufferAttribute(scaleArray, 1));
-
-    const mistMat = new THREE.PointsMaterial({
-      color: 0x88ccff, size: 0.6, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending
-    });
-    const mist = new THREE.Points(mistParticles, mistMat);
-    scene.add(mist);
-
-    // ----- GRAMOPHONE FRUIT -----
-    function createGramophone(color) {
-      const group = new THREE.Group();
-
-      // Vinyl disc
-      const disc = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.7, 0.7, 0.04, 64),
-        new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 })
+      // Sky
+      const sky = new THREE.Mesh(
+        new THREE.SphereGeometry(150, 32, 32),
+        new THREE.ShaderMaterial({
+          vertexShader: `varying vec3 vPos; void main() { vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+          fragmentShader: `varying vec3 vPos; uniform float t; void main() { vec3 night = vec3(0.05,0.05,0.15); vec3 dawn = vec3(0.3,0.2,0.4); float mixVal = sin(t)*0.5+0.5; gl_FragColor = vec4(mix(night, dawn, mixVal), 1.0); }`,
+          uniforms: { t: { value: 0 } },
+          side: THREE.BackSide
+        })
       );
-      group.add(disc);
+      scene.add(sky);
 
-      // Horn
-      const horn = new THREE.Mesh(
-        new THREE.ConeGeometry(0.9, 1.4, 12),
-        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.6 })
-      );
-      horn.position.z = 0.9;
-      horn.rotation.x = Math.PI / 2;
-      group.add(horn);
+      // Ground
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(300,300), new THREE.MeshStandardMaterial({color:0x0a1a0a}));
+      ground.rotation.x = -Math.PI/2; ground.position.y = -3;
+      scene.add(ground);
 
-      // Sound-wave particles (on hover)
-      const waveGeo = new THREE.BufferGeometry();
-      const wavePos = new Float32Array(60);
-      for (let i = 0; i < 20; i++) {
-        const a = i / 20 * Math.PI * 2;
-        wavePos[i*3]   = Math.cos(a) * 1.2;
-        wavePos[i*3+1] = Math.sin(a * 0.5) * 0.3;
-        wavePos[i*3+2] = Math.sin(a) * 1.2;
-      }
-      waveGeo.setAttribute('position', new THREE.BufferAttribute(wavePos, 3));
-      const waveMat = new THREE.PointsMaterial({ color, size: 0.15, transparent: true, opacity: 0 });
-      const waves = new THREE.Points(waveGeo, waveMat);
-      group.add(waves);
-      group.userData.waves = waves;
-
-      group.userData.type = 'fruit';
-      return group;
-    }
-
-    // ----- TREE -----
-    function createTree(album, x, z) {
-      const tree = new THREE.Group();
-
-      // Trunk
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.8, 7, 8),
-        new THREE.MeshStandardMaterial({ color: 0x3d2817 })
-      );
-      trunk.position.y = 2;
-      tree.add(trunk);
-
-      // Foliage layers
-      for (let i = 0; i < 4; i++) {
-        const foliage = new THREE.Mesh(
-          new THREE.SphereGeometry(3 - i * 0.4, 8, 6),
-          new THREE.MeshStandardMaterial({ color: new THREE.Color(0x0a2a0a).offsetHSL(0, 0.1 * i, 0), flatShading: true })
-        );
-        foliage.position.y = 5 + i * 1.2;
-        foliage.userData.windPhase = Math.random() * Math.PI * 2;
-        tree.add(foliage);
+      // Gramophone
+      function createGramophone(c) {
+        const g = new THREE.Group();
+        g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,0.04,64), new THREE.MeshStandardMaterial({color:0x000, metalness:0.9})));
+        const horn = new THREE.Mesh(new THREE.ConeGeometry(0.9,1.4,12), new THREE.MeshStandardMaterial({color:c, emissive:c, emissiveIntensity:0.6}));
+        horn.position.z = 0.9; horn.rotation.x = Math.PI/2;
+        g.add(horn);
+        g.userData.type = 'fruit';
+        return g;
       }
 
-      // Fruits
-      for (let i = 0; i < 3; i++) {
-        const fruit = createGramophone(album.color);
-        const angle = (i / 3) * Math.PI * 2 + Math.random() * 0.5;
-        const radius = 2.5 + Math.random() * 0.5;
-        fruit.position.set(
-          Math.cos(angle) * radius,
-          5.5 + Math.random() * 1.5,
-          Math.sin(angle) * radius
-        );
-        fruit.userData.album = album;
-        fruit.userData.rotSpeed = 0.4 + Math.random() * 0.6;
-        tree.add(fruit);
-      }
-
-      tree.position.set(x, 0, z);
-      scene.add(tree);
-      return tree;
-    }
-
-    // ----- PLACE TREES -----
-    const trees = [];
-    albums.forEach((album, i) => {
-      const angle = (i / albums.length) * Math.PI * 2;
-      const dist = 14 + (i % 2) * 6;
-      const x = Math.cos(angle) * dist;
-      const z = Math.sin(angle) * dist;
-      trees.push(createTree(album, x, z));
-    });
-
-    // ----- RAYCASTER & INTERACTION -----
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    const tooltip = document.getElementById('tooltip');
-    let hoveredFruit = null;
-
-    function onMouseMove(e) {
-      mouse.x = (e.clientX / innerWidth) * 2 - 1;
-      mouse.y = -(e.clientY / innerHeight) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scene.children, true);
-
-      let found = null;
-      for (let obj of intersects) {
-        if (obj.object.parent?.userData.type === 'fruit') {
-          found = obj.object.parent;
-          break;
+      // Tree
+      function createTree(album, x, z) {
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.8,7,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
+        trunk.position.y = 2; tree.add(trunk);
+        for (let i=0; i<4; i++) {
+          const leaf = new THREE.Mesh(new THREE.SphereGeometry(3-i*0.4,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a, flatShading:true}));
+          leaf.position.y = 5 + i*1.2; leaf.userData.wind = Math.random()*Math.PI*2;
+          tree.add(leaf);
         }
+        for (let i=0; i<3; i++) {
+          const f = createGramophone(album.color);
+          const a = (i/3)*Math.PI*2; const r = 2.5;
+          f.position.set(Math.cos(a)*r, 5.5, Math.sin(a)*r);
+          f.userData.album = album; f.userData.rotSpeed = 0.5 + Math.random()*0.3;
+          tree.add(f);
+        }
+        tree.position.set(x,0,z); scene.add(tree);
+        return tree;
       }
 
-      if (found !== hoveredFruit) {
-        if (hoveredFruit) {
-          hoveredFruit.userData.waves.material.opacity = 0;
-        }
-        hoveredFruit = found;
-        if (hoveredFruit) {
-          const album = hoveredFruit.userData.album;
-          tooltip.textContent = `${album.title.split(':')[0]} – ${album.poem}`;
-          tooltip.style.opacity = 1;
-          tooltip.style.left = (e.clientX + 15) + 'px';
-          tooltip.style.top = (e.clientY + 15) + 'px';
-          hoveredFruit.userData.waves.material.opacity = 0.8;
-        } else {
-          tooltip.style.opacity = 0;
-        }
-      }
-    }
+      // Place trees
+      const trees = [];
+      albums.forEach((a,i) => {
+        const ang = (i/albums.length)*Math.PI*2;
+        const d = 14 + (i%2)*6;
+        trees.push(createTree(a, Math.cos(ang)*d, Math.sin(ang)*d));
+      });
 
-    function onClick(e) {
-      if (!hoveredFruit) return;
-      openAlbumPanel(hoveredFruit.userData.album);
-    }
+      // Interaction
+      const ray = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      const tooltip = document.getElementById('tooltip');
+      let hover = null;
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('click', onClick);
-    window.addEventListener('touchstart', e => {
-      const touch = e.touches[0];
-      mouse.x = (touch.clientX / innerWidth) * 2 - 1;
-      mouse.y = -(touch.clientY / innerHeight) * 2 + 1;
-      onMouseMove(touch);
-      onClick(touch);
-    });
-
-    // ----- ALBUM PANEL -----
-    const panel = document.getElementById('album-panel');
-    const titleEl = document.getElementById('album-title');
-    const artEl = document.getElementById('album-art');
-    const playerContainer = document.getElementById('player-container');
-
-    function openAlbumPanel(album) {
-      titleEl.textContent = album.title;
-      artEl.src = album.art;
-      playerContainer.innerHTML = `
-        <iframe width="100%" height="166" scrolling="no" frameborder="no"
-          src="https://w.soundcloud.com/player/?url=${encodeURIComponent(album.url)}&color=%235ab&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false">
-        </iframe>
-      `;
-      panel.style.display = 'block';
-      panel.style.left = '60px';
-      panel.style.top = '60px';
-    }
-
-    document.querySelector('.close-btn').onclick = () => panel.style.display = 'none';
-
-    // ==============================================================
-    // ANIMATION LOOP
-    // ==============================================================
-    const clock = new THREE.Clock();
-    function animate() {
-      const t = clock.getElapsedTime();
-
-      // Sky cycle
-      skyMat.uniforms.time.value = t;
-
-      // Wind on leaves
-      scene.traverse(obj => {
-        if (obj.userData.windPhase !== undefined) {
-          obj.rotation.z = Math.sin(t * 1.5 + obj.userData.windPhase) * 0.08;
-        }
-        if (obj.userData.rotSpeed) {
-          obj.rotation.y += obj.userData.rotSpeed * 0.012;
+      window.addEventListener('mousemove', e => {
+        mouse.x = (e.clientX/innerWidth)*2-1;
+        mouse.y = -(e.clientY/innerHeight)*2+1;
+        ray.setFromCamera(mouse, camera);
+        const hits = ray.intersectObjects(scene.children, true);
+        let found = null;
+        for (let h of hits) { if (h.object.parent?.userData.type === 'fruit') { found = h.object.parent; break; } }
+        if (found !== hover) {
+          if (hover) hover.children[1].material.emissiveIntensity = 0.6;
+          hover = found;
+          if (hover) {
+            const al = hover.userData.album;
+            tooltip.textContent = al.title.split(':')[0] + ' – ' + al.poem;
+            tooltip.style.left = (e.clientX+15)+'px'; tooltip.style.top = (e.clientY+15)+'px'; tooltip.style.opacity = 1;
+            hover.children[1].material.emissiveIntensity = 1.2;
+          } else tooltip.style.opacity = 0;
         }
       });
 
-      // Mist drift
-      mist.rotation.y = t * 0.05;
+      window.addEventListener('click', () => {
+        if (hover) {
+          const a = hover.userData.album;
+          document.getElementById('album-title').textContent = a.title;
+          document.getElementById('album-art').src = a.art;
+          document.getElementById('player-container').innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(a.url)}&color=%235ab&auto_play=false"></iframe>`;
+          document.getElementById('album-panel').style.display = 'block';
+        }
+      });
 
-      controls.update();
-      composer.render();
-      requestAnimationFrame(animate);
-    }
-    animate();
+      document.querySelector('.close-btn').onclick = () => { document.getElementById('album-panel').style.display = 'none'; };
 
-    // ==============================================================
-    // RESIZE
-    // ==============================================================
-    window.addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-      composer.setSize(innerWidth, innerHeight);
+      // Animation
+      const clock = new THREE.Clock();
+      function anim() {
+        const t = clock.getElapsedTime();
+        sky.material.uniforms.t.value = t * 0.05;
+        scene.traverse(o => {
+          if (o.userData.wind !== undefined) o.rotation.z = Math.sin(t*1.5 + o.userData.wind)*0.08;
+          if (o.userData.rotSpeed) o.rotation.y += o.userData.rotSpeed * 0.012;
+        });
+        controls.update();
+        composer.render();
+        requestAnimationFrame(anim);
+      }
+      anim();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight);
+      });
+
+      console.log('FOREST LOADED! 🌲🎶');
     });
   </script>
 </body>
