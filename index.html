@@ -7,9 +7,7 @@
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { overflow:hidden; background:#000; font-family:'Courier New',monospace; }
-    #loading { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:18px; z-index:5; }
-    #overlay { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10; }
-    #info { position:absolute; top:20px; left:20px; color:#ddd; font-size:14px; background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; max-width:320px; backdrop-filter:blur(6px); }
+    #info { position:absolute; top:20px; left:20px; color:#ddd; font-size:14px; background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; max-width:320px; backdrop-filter:blur(6px); z-index:10; }
     #info a { color:#8cf; text-decoration:underline; }
     .tooltip { position:absolute; background:rgba(20,20,40,0.9); color:#fff; padding:8px 12px; border-radius:8px; font-size:13px; pointer-events:none; opacity:0; transition:opacity .3s; white-space:nowrap; z-index:100; backdrop-filter:blur(8px); border:1px solid #445; }
     .album-panel { position:absolute; background:rgba(15,15,35,0.97); color:#fff; padding:24px; border-radius:16px; width:340px; box-shadow:0 0 40px rgba(100,180,255,0.4); display:none; z-index:200; pointer-events:auto; backdrop-filter:blur(12px); border:1px solid #556; }
@@ -18,18 +16,17 @@
     .play-btn { background:#5ab; color:#fff; border:none; padding:14px; margin:16px 0; border-radius:10px; cursor:pointer; font-weight:bold; width:100%; font-size:16px; }
     .reward { font-size:12px; color:#8cf; margin-top:12px; }
     canvas { display:block; }
+    #keys { position:absolute; bottom:20px; left:20px; color:#aaa; font-size:12px; z-index:10; }
   </style>
 
-  <!-- RELIABLE CDN (Cloudflare cdnjs, r134) -->
+  <!-- STABLE THREE.JS (r134) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/EffectComposer.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/RenderPass.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/UnrealBloomPass.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/postprocessing/UnrealBloomPass.js"></script>
 </head>
 <body>
-  <div id="loading">Loading Forest... 🌲</div>
-
   <div id="overlay">
     <div id="info">
       <strong>п o п c o п f o r m i s t</strong><br>
@@ -39,6 +36,7 @@
       <a href="#" target="_blank">Reward if it moves you</a>
     </div>
     <div class="tooltip" id="tooltip"></div>
+    <div id="keys" style="display:none;">WASD: Fly | Mouse: Look</div>
   </div>
 
   <div id="album-panel" class="album-panel">
@@ -53,17 +51,51 @@
   </div>
 
   <script>
-    // Check if THREE loaded
-    if (typeof THREE === 'undefined') {
-      document.getElementById('loading').innerHTML = 'Three.js failed to load 😔<br>Try refreshing or check connection.';
-      console.error('THREE not loaded');
-      throw new Error('THREE not loaded');
+    // SAFE CHECK FOR ORBITCONTROLS
+    let controls;
+    let hasOrbit = false;
+    try {
+      controls = new THREE.OrbitControls(camera, renderer.domElement); // This line will fail if not constructor
+      hasOrbit = true;
+    } catch (e) {
+      console.warn('OrbitControls failed — using free fly mode:', e);
+      document.getElementById('keys').style.display = 'block';
+      // FALLBACK: Free camera with WASD + mouse
+      const keys = {};
+      window.addEventListener('keydown', e => keys[e.code] = true);
+      window.addEventListener('keyup', e => keys[e.code] = false);
+      const mouseLook = new THREE.Vector2();
+      let isMouseDown = false;
+      window.addEventListener('mousedown', () => isMouseDown = true);
+      window.addEventListener('mouseup', () => isMouseDown = false);
+      window.addEventListener('mousemove', e => {
+        if (isMouseDown) {
+          mouseLook.x -= e.movementX * 0.002;
+          mouseLook.y -= e.movementY * 0.002;
+          camera.rotation.order = 'YXZ';
+          camera.rotation.y = mouseLook.x;
+          camera.rotation.x = mouseLook.y;
+        }
+      });
+      // Fly logic in animate()
+      function updateFly() {
+        const speed = 0.5;
+        const dir = new THREE.Vector3();
+        if (keys['KeyW']) dir.z -= speed;
+        if (keys['KeyS']) dir.z += speed;
+        if (keys['KeyA']) dir.x -= speed;
+        if (keys['KeyD']) dir.x += speed;
+        if (keys['Space']) camera.position.y += speed;
+        if (keys['ShiftLeft']) camera.position.y -= speed;
+        camera.translateX(dir.x);
+        camera.translateY(dir.y);
+        camera.translateZ(dir.z);
+      }
     }
 
-    // Remove loading
-    document.getElementById('loading').remove();
-
-    // Albums
+    // ==============================================================
+    // ALBUMS (same as before)
+    // ==============================================================
     const albums = [
       { title: "Optima Box: The Future Is Inviting", url: "https://on.soundcloud.com/nWSYB7e87sdZaWxtT9", color: 0x00ff88, art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "The future hums in neon leaves..." },
       { title: "Wisdom Box: As We Learn Cycling", url: "https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj", color: 0xa0ff00, art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..." },
@@ -74,7 +106,7 @@
       { title: "Energy Box: Time Is Here", url: "https://on.soundcloud.com/QNehEABnSeSodbnKWF", color: 0xffff00, art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..." }
     ];
 
-    // Scene setup
+    // Scene (same setup)
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -83,10 +115,11 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild(renderer.domElement);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.07;
-    controls.maxPolarAngle = Math.PI / 2.1;
+    if (hasOrbit) {
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+      controls.maxPolarAngle = Math.PI / 2.1;
+    }
     camera.position.set(0, 10, 25);
 
     const composer = new THREE.EffectComposer(renderer);
@@ -100,14 +133,12 @@
     moon.position.set(15, 30, 15);
     scene.add(moon);
 
-    // Sky (simple for now)
     const sky = new THREE.Mesh(
       new THREE.SphereGeometry(150, 32, 32),
       new THREE.MeshBasicMaterial({ color: 0x0a0a1a, side: THREE.BackSide })
     );
     scene.add(sky);
 
-    // Ground
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(300, 300),
       new THREE.MeshBasicMaterial({ color: 0x0a1a0a })
@@ -116,7 +147,7 @@
     ground.position.y = -3;
     scene.add(ground);
 
-    // Gramophone fruit
+    // Gramophone & Tree (same)
     function createGramophone(color) {
       const group = new THREE.Group();
       const disc = new THREE.Mesh(
@@ -135,7 +166,6 @@
       return group;
     }
 
-    // Tree
     function createTree(album, x, z) {
       const tree = new THREE.Group();
       const trunk = new THREE.Mesh(
@@ -163,7 +193,6 @@
       return tree;
     }
 
-    // Place trees
     const trees = [];
     albums.forEach((album, i) => {
       const angle = (i / albums.length) * Math.PI * 2;
@@ -173,7 +202,7 @@
       trees.push(createTree(album, x, z));
     });
 
-    // Interaction
+    // Interaction (same)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -182,18 +211,15 @@
     window.addEventListener('mousemove', (e) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(scene.children, true);
-
       let found = null;
       for (let intersect of intersects) {
-        if (intersect.object.parent.userData.type === 'fruit') {
+        if (intersect.object.parent && intersect.object.parent.userData.type === 'fruit') {
           found = intersect.object.parent;
           break;
         }
       }
-
       if (found !== hoveredFruit) {
         hoveredFruit = found;
         if (hoveredFruit) {
@@ -219,8 +245,6 @@
           </iframe>
         `;
         document.getElementById('album-panel').style.display = 'block';
-        document.getElementById('album-panel').style.left = '50px';
-        document.getElementById('album-panel').style.top = '50px';
       }
     });
 
@@ -236,7 +260,11 @@
           if (obj.userData.rotSpeed) obj.rotation.y += 0.01;
         });
       });
-      controls.update();
+      if (hasOrbit) {
+        controls.update();
+      } else {
+        updateFly(); // Fallback fly
+      }
       composer.render();
     }
     animate();
@@ -248,6 +276,8 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    console.log('Forest loaded! 🎉 Orbit:', hasOrbit ? 'Yes' : 'Fly mode');
   </script>
 </body>
 </html>
