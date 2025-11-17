@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Seven v0.5.3</title>
+<title>п o п c o п f o r m i s t | The Trees Bear Music v0.6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -21,8 +21,9 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Seven v0.5.3</em><br><br>
+  <em>The Trees Bear Music v0.6</em><br><br>
   Drag to orbit • Scroll to zoom • Click a chest<br>
+  Fruits = future tracks<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -44,7 +45,6 @@
   renderer.setPixelRatio(devicePixelRatio);
   document.body.appendChild(renderer.domElement);
 
-  // Sky + stars
   scene.background = new THREE.Color(0x0a0a1f);
   const stars = new THREE.Points(
     new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(Array.from({length:9000},()=>THREE.MathUtils.randFloatSpread(2000)),3)),
@@ -52,19 +52,17 @@
   );
   scene.add(stars);
 
-  // Lights
   scene.add(new THREE.AmbientLight(0x404060, 0.9));
   const moon = new THREE.DirectionalLight(0xaaccff, 1.4);
   moon.position.set(30,50,20);
   scene.add(moon);
 
-  // Ground
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(800,800), new THREE.MeshStandardMaterial({color:0x0a1a0a, roughness:1}));
   ground.rotation.x = -Math.PI/2;
   ground.position.y = -1;
   scene.add(ground);
 
-  // === CENTRAL STONEHENGE ===
+  // CENTRAL STONEHENGE
   const stonehenge = new THREE.Group();
   const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
   const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
@@ -80,7 +78,7 @@
   stonehenge.add(aura);
   scene.add(stonehenge);
 
-  // === ORBIT CONTROLS (drag + zoom) ===
+  // ORBIT CONTROLS
   let radius = 70;
   let theta = 0;
   let phi = Math.PI / 3.5;
@@ -117,7 +115,18 @@
     updateCamera();
   });
 
-  // === ALBUMS + CHESTS (now in front of trees) ===
+  // FRUIT SHAPES
+  const fruitShapes = [
+    new THREE.SphereGeometry(0.7, 8, 6),
+    new THREE.SphereGeometry(0.8, 10, 8),
+    new THREE.ConeGeometry(0.6, 1.2, 8),
+    new THREE.ConeGeometry(0.5, 1.4, 8),
+    new THREE.BoxGeometry(0.8, 1.2, 0.8),
+    new THREE.TorusGeometry(0.5, 0.2, 6, 12)
+  ];
+  const fruitColors = [0xff3366, 0x33ff99, 0xffaa00, 0xcc33ff, 0xffff33, 0x33ccff, 0xff6666, 0x66ff33];
+
+  // ALBUMS + TREES + FRUITS + CHESTS
   const albums = [
     {title:"Optima Box: The Future Is Inviting",url:"https://on.soundcloud.com/nWSYB7e87sdZaWxtT9",art:"https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg",poem:"Neon leaves hum tomorrow..."},
     {title:"Wisdom Box: As We Learn Cycling",url:"https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj",art:"https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg",poem:"Wheels wobble, lessons sting..."},
@@ -134,21 +143,34 @@
     const x = Math.cos(angle)*radiusCircle;
     const z = Math.sin(angle)*radiusCircle;
 
-    // Tree (behind)
+    // TREE
     const tree = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.6,2.2,17,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
     trunk.position.y = 8.5;
-    const leaves = new THREE.Mesh(new THREE.SphereGeometry(7.5,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(7.5,10,8), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
     leaves.position.y = 17;
     tree.add(trunk,leaves);
-    tree.position.set(x,z,0);
+
+    // 12 FRUITS
+    for(let f=0; f<12; f++){
+      const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
+      const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
+      const fruit = new THREE.Mesh(shape, new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:0.6}));
+      const a = Math.random()*Math.PI*2;
+      const r = 3 + Math.random()*3;
+      const h = 12 + Math.random()*8;
+      fruit.position.set(Math.cos(a)*r, h, Math.sin(a)*r);
+      fruit.rotation.set(Math.random(),Math.random(),Math.random());
+      fruit.scale.setScalar(0.7 + Math.random()*0.6);
+      tree.add(fruit);
+    }
+
+    tree.position.set(x,0,z);
     scene.add(tree);
 
-    // Chest IN FRONT of tree (offset toward center)
-    const chestOffset = 4;
-    const chestX = x - Math.cos(angle) * chestOffset;
-    const chestZ = z - Math.sin(angle) * chestOffset;
-
+    // CHEST IN FRONT
+    const chestX = x - Math.cos(angle)*5;
+    const chestZ = z - Math.sin(angle)*5;
     const chest = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(3.2,2,2.4), new THREE.MeshStandardMaterial({color:0x8B4513}));
     const lid = new THREE.Mesh(new THREE.BoxGeometry(3.3,0.5,2.5), new THREE.MeshStandardMaterial({color:0xA0522D}));
@@ -162,7 +184,7 @@
     ctx.strokeRect(18,18,220,220); ctx.strokeRect(48,48,160,160);
     ctx.font='bold 146px Arial'; ctx.fillStyle='#FFD700'; ctx.textAlign='center'; ctx.fillText('П',128,182);
     const tex = new THREE.CanvasTexture(canvas);
-    const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.6), new THREE.MeshStandardMaterial({map:tex, emissive:0xff3366, emissiveIntensity:0.4}));
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.6), new THREE.MeshStandardMaterial({map:tex, emissive:0xff3366, emissiveIntensity:0.5}));
     panel.position.set(0,0.6,1.21);
     chest.add(panel);
 
@@ -173,7 +195,7 @@
   });
 
   // Background forest
-  for(let i=0;i<220;i++){
+  for(let i=0;i<250;i++){
     const a = Math.random()*Math.PI*2;
     const d = 80 + Math.random()*400;
     const tree = new THREE.Group();
@@ -182,11 +204,11 @@
     const leaves = new THREE.Mesh(new THREE.SphereGeometry(6,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
     leaves.position.y = 14;
     tree.add(trunk,leaves);
-    tree.position.set(Math.cos(a)*d,0,Math.sin(a)*d);
+    tree.position.set(Math.cos(a)*d, 0, Math.sin(a)*d);  // ← fixed: y = 0
     scene.add(tree);
   }
 
-  // === CLICK & HOVER ===
+  // Interaction (hover + click chest)
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   const tooltip = document.getElementById('tooltip');
@@ -231,9 +253,19 @@
   function animate(){
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
+
+    // Gentle fruit sway
+    scene.traverse(obj => {
+      if(obj.userData.isFruit){
+        obj.rotation.y = Math.sin(t + obj.position.x)*0.2;
+        obj.position.y += Math.sin(t*3 + obj.position.z)*0.02;
+      }
+    });
+
     const pulse = 1 + Math.sin(t*1.2)*0.04;
     stonehenge.scale.setScalar(pulse);
     aura.material.opacity = 0.2 + Math.sin(t*1.5)*0.1;
+
     renderer.render(scene,camera);
   }
   animate();
