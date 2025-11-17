@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Spinning Circle v0.6</title>
+<title>п o п c o п f o r m i s t | The Circle of Seven v0.5.3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -21,9 +21,8 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Spinning Circle v0.6</em><br><br>
-  Drag to rotate around the monument<br>
-  Click a chest to listen<br>
+  <em>The Circle of Seven v0.5.3</em><br><br>
+  Drag to orbit • Scroll to zoom • Click a chest<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -47,59 +46,78 @@
 
   // Sky + stars
   scene.background = new THREE.Color(0x0a0a1f);
-  const starsGeo = new THREE.BufferGeometry();
-  const starsPos = [];
-  for(let i=0;i<3000;i++) {
-    starsPos.push(THREE.MathUtils.randFloatSpread(1000));
-    starsPos.push(THREE.MathUtils.randFloatSpread(1000));
-    starsPos.push(THREE.MathUtils.randFloatSpread(1000));
-  }
-  starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsPos,3));
-  const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({color:0xffffff,size:1.2}));
+  const stars = new THREE.Points(
+    new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(Array.from({length:9000},()=>THREE.MathUtils.randFloatSpread(2000)),3)),
+    new THREE.PointsMaterial({color:0xffffff,size:1.2})
+  );
   scene.add(stars);
 
   // Lights
-  scene.add(new THREE.AmbientLight(0x404060, 0.8));
+  scene.add(new THREE.AmbientLight(0x404060, 0.9));
   const moon = new THREE.DirectionalLight(0xaaccff, 1.4);
   moon.position.set(30,50,20);
   scene.add(moon);
 
   // Ground
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(800,800),
-    new THREE.MeshStandardMaterial({color:0x0a1a0a, roughness:1})
-  );
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(800,800), new THREE.MeshStandardMaterial({color:0x0a1a0a, roughness:1}));
   ground.rotation.x = -Math.PI/2;
   ground.position.y = -1;
   scene.add(ground);
 
-  // CENTRAL STONEHENGE
+  // === CENTRAL STONEHENGE ===
   const stonehenge = new THREE.Group();
   const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
-
-  const leftPillar = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
-  leftPillar.position.set(-6,6,0);
-  leftPillar.castShadow = true;
-
-  const rightPillar = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
-  rightPillar.position.set(6,6,0);
-  rightPillar.castShadow = true;
-
+  const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
+  left.position.set(-6,6,0);
+  const right = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
+  right.position.set(6,6,0);
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(15,3,3.5), stoneMat);
   lintel.position.set(0,13,0);
-  lintel.castShadow = true;
+  stonehenge.add(left,right,lintel);
 
-  stonehenge.add(leftPillar, rightPillar, lintel);
-
-  const aura = new THREE.Mesh(
-    new THREE.SphereGeometry(12,32,16),
-    new THREE.MeshBasicMaterial({color:0x88ccff, transparent:true, opacity:0.2})
-  );
+  const aura = new THREE.Mesh(new THREE.SphereGeometry(12,32,16), new THREE.MeshBasicMaterial({color:0x88ccff, transparent:true, opacity:0.2}));
   aura.position.y = 7;
   stonehenge.add(aura);
   scene.add(stonehenge);
 
-  // ALBUMS
+  // === ORBIT CONTROLS (drag + zoom) ===
+  let radius = 70;
+  let theta = 0;
+  let phi = Math.PI / 3.5;
+  let isDragging = false;
+  let previousMouse = { x: 0, y: 0 };
+
+  const updateCamera = () => {
+    camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+    camera.position.y = radius * Math.cos(phi);
+    camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+    camera.lookAt(0, 6, 0);
+  };
+  updateCamera();
+
+  renderer.domElement.addEventListener('pointerdown', e => {
+    isDragging = true;
+    previousMouse = { x: e.clientX, y: e.clientY };
+  });
+  renderer.domElement.addEventListener('pointermove', e => {
+    if (isDragging) {
+      const deltaX = e.clientX - previousMouse.x;
+      const deltaY = e.clientY - previousMouse.y;
+      theta -= deltaX * 0.005;
+      phi += deltaY * 0.005;
+      phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+      previousMouse = { x: e.clientX, y: e.clientY };
+      updateCamera();
+    }
+  });
+  renderer.domElement.addEventListener('pointerup', () => isDragging = false);
+  renderer.domElement.addEventListener('wheel', e => {
+    radius += e.deltaY * 0.05;
+    radius = Math.max(30, Math.min(150, radius));
+    updateCamera();
+  });
+
+  // === ALBUMS + CHESTS (now in front of trees) ===
   const albums = [
     {title:"Optima Box: The Future Is Inviting",url:"https://on.soundcloud.com/nWSYB7e87sdZaWxtT9",art:"https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg",poem:"Neon leaves hum tomorrow..."},
     {title:"Wisdom Box: As We Learn Cycling",url:"https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj",art:"https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg",poem:"Wheels wobble, lessons sting..."},
@@ -110,30 +128,33 @@
     {title:"Energy Box: Time Is Here",url:"https://on.soundcloud.com/QNehEABnSeSodbnKWF",art:"https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg",poem:"Pulse now, the moment ignites..."}
   ];
 
-  const circleRadius = 32;
+  const radiusCircle = 34;
   albums.forEach((album,i)=>{
     const angle = (i/albums.length)*Math.PI*2;
-    const x = Math.cos(angle)*circleRadius;
-    const z = Math.sin(angle)*circleRadius;
+    const x = Math.cos(angle)*radiusCircle;
+    const z = Math.sin(angle)*radiusCircle;
 
-    // Tree
+    // Tree (behind)
     const tree = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.4,2,16,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
-    trunk.position.y = 8;
-    const leaves = new THREE.Mesh(new THREE.SphereGeometry(7,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
-    leaves.position.y = 16;
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.6,2.2,17,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
+    trunk.position.y = 8.5;
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(7.5,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
+    leaves.position.y = 17;
     tree.add(trunk,leaves);
-    tree.position.set(x,0,z);
+    tree.position.set(x,z,0);
     scene.add(tree);
 
-    // Chest at trunk base
+    // Chest IN FRONT of tree (offset toward center)
+    const chestOffset = 4;
+    const chestX = x - Math.cos(angle) * chestOffset;
+    const chestZ = z - Math.sin(angle) * chestOffset;
+
     const chest = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(3.2,2,2.4), new THREE.MeshStandardMaterial({color:0x8B4513}));
     const lid = new THREE.Mesh(new THREE.BoxGeometry(3.3,0.5,2.5), new THREE.MeshStandardMaterial({color:0xA0522D}));
     lid.position.y = 1.25;
     chest.add(body,lid);
 
-    // П logo
     const canvas = document.createElement('canvas'); canvas.width=canvas.height=256;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle='#8B0000'; ctx.fillRect(0,0,256,256);
@@ -145,16 +166,16 @@
     panel.position.set(0,0.6,1.21);
     chest.add(panel);
 
-    chest.position.set(x,0,z);
+    chest.position.set(chestX,0,chestZ);
     chest.lookAt(0,0,0);
     chest.userData = {type:'chest', album};
     scene.add(chest);
   });
 
   // Background forest
-  for(let i=0;i<200;i++){
+  for(let i=0;i<220;i++){
     const a = Math.random()*Math.PI*2;
-    const d = 70 + Math.random()*400;
+    const d = 80 + Math.random()*400;
     const tree = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1,1.6,14,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
     trunk.position.y = 7;
@@ -165,7 +186,7 @@
     scene.add(tree);
   }
 
-  // Interaction
+  // === CLICK & HOVER ===
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   const tooltip = document.getElementById('tooltip');
@@ -177,7 +198,11 @@
     raycaster.setFromCamera(mouse,camera);
     const hits = raycaster.intersectObjects(scene.children,true);
     let found = null;
-    for(let h of hits){ if(h.object.parent?.userData.type==='chest'){ found=h.object.parent; break; }}
+    for(let h of hits){
+      if(h.object.parent && h.object.parent.userData && h.object.parent.userData.type==='chest'){
+        found = h.object.parent; break;
+      }
+    }
     if(found!==hovered){
       if(hovered) hovered.scale.set(1,1,1);
       hovered = found;
@@ -198,25 +223,17 @@
     document.getElementById('player-container').innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${a.url}&color=%235ab&auto_play=true"></iframe>`;
     document.getElementById('album-panel').style.display = 'block';
   }});
+
   document.querySelector('.close-btn').onclick = () => document.getElementById('album-panel').style.display='none';
 
-  // Camera + animation
-  camera.position.set(0,18,60);
-  let theta = 0;
+  // Animation
   const clock = new THREE.Clock();
   function animate(){
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
-
-    theta += 0.0002;
-    camera.position.x = Math.sin(theta)*60;
-    camera.position.z = Math.cos(theta)*60;
-    camera.lookAt(0,6,0);
-
     const pulse = 1 + Math.sin(t*1.2)*0.04;
     stonehenge.scale.setScalar(pulse);
     aura.material.opacity = 0.2 + Math.sin(t*1.5)*0.1;
-
     renderer.render(scene,camera);
   }
   animate();
