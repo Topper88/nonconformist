@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Breathing Monument v0.4</title>
+<title>п o п c o п f o r m i s t | The Circle of Seven v0.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
-  #info { position:absolute; top:20px; left:20px; color:#ddd; background:rgba(0,0,0,0.5); padding:15px; border-radius:12px; max-width:340px; backdrop-filter:blur(10px); z-index:10; border:1px solid #334; }
+  #info { position:absolute; top:20px; left:20px; color:#ddd; background:rgba(0,0,0,0.6); padding:15px; border-radius:12px; max-width:340px; backdrop-filter:blur(10px); z-index:10; border:1px solid #334; }
   #info a { color:#8cf; }
   .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
   .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.98); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
@@ -21,8 +21,8 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Breathing Monument v0.4</em><br><br>
-  Move mouse • Click a chest • Feel the pulse<br>
+  <em>The Circle of Seven v0.5</em><br><br>
+  Orbit • Click a chest • Let the monument breathe<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -37,99 +37,59 @@
 
 <script>
   const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0a1a2f, 0.0008);
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias:true });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(devicePixelRatio);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
 
-  // === CLAUDE'S GORGEOUS SKY ===
-  const skyCanvas = document.createElement('canvas');
-  skyCanvas.width = 2; skyCanvas.height = 256;
-  const ctx = skyCanvas.getContext('2d');
-  const grad = ctx.createLinearGradient(0,0,0,256);
-  grad.addColorStop(0, '#6B8E23');
-  grad.addColorStop(1, '#DAA520');
-  ctx.fillStyle = grad; ctx.fillRect(0,0,2,256);
-  scene.background = new THREE.CanvasTexture(skyCanvas);
+  // Night sky + stars
+  scene.background = new THREE.Color(0x0a0a1f);
+  const stars = new THREE.Points(
+    new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(Array.from({length:3000},()=>THREE.MathUtils.randFloatSpread(1000)),3)),
+    new THREE.PointsMaterial({color:0xffffff,size:1.2})
+  );
+  scene.add(stars);
 
-  // === LIGHTS ===
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-  sun.position.set(20, 40, 30);
-  sun.castShadow = true;
-  sun.shadow.mapSize.width = 2048;
-  sun.shadow.mapSize.height = 2048;
-  scene.add(sun);
+  // Lights
+  scene.add(new THREE.AmbientLight(0x404060, 0.8));
+  const moon = new THREE.DirectionalLight(0xaaccff, 1.4);
+  moon.position.set(30,50,20);
+  scene.add(moon);
 
-  // === GROUND ===
+  // Ground
   const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(600,600),
-    new THREE.MeshStandardMaterial({ color:0x7A6F4C, roughness:0.95 })
+    new THREE.PlaneGeometry(800,800),
+    new THREE.MeshStandardMaterial({color:0x0a1a0a, roughness:1})
   );
   ground.rotation.x = -Math.PI/2;
-  ground.receiveShadow = true;
+  ground.position.y = -1;
   scene.add(ground);
 
-  // === INFINITE FOREST BACKGROUND ===
-  function createTree(x,z,scale=1){
-    const t = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.8*scale,1.2*scale,14*scale,8),
-      new THREE.MeshStandardMaterial({color:0x8B4513}));
-    trunk.position.y = 7*scale;
-    const leaves = new THREE.Mesh(new THREE.SphereGeometry(5*scale,8,6),
-      new THREE.MeshStandardMaterial({color:0x228B22}));
-    leaves.position.y = 14*scale;
-    t.add(trunk); t.add(leaves);
-    t.position.set(x,0,z);
-    scene.add(t);
-  }
-  for(let i=0;i<180;i++){
-    const a = Math.random()*Math.PI*2;
-    const d = 50 + Math.random()*300;
-    createTree(Math.cos(a)*d, Math.sin(a)*d, 0.7+Math.random()*0.8);
-  }
-
-  // === STONEHENGE (Claude’s masterpiece) ===
+  // === CENTRAL STONEHENGE (the heart) ===
   const stonehenge = new THREE.Group();
-  const stoneMat = new THREE.MeshStandardMaterial({color:0x8B8680, roughness:0.95, metalness:0.05});
+  const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
 
-  const left = new THREE.Mesh(new THREE.BoxGeometry(2.6,11,3.2), stoneMat);
-  left.position.set(-5.2,5.5,0); left.castShadow=left.receiveShadow=true;
-  stonehenge.add(left);
-  const right = new THREE.Mesh(new THREE.BoxGeometry(2.6,11,3.2), stoneMat);
-  right.position.set(5.2,5.5,0); right.castShadow=right.receiveShadow=true;
-  stonehenge.add(right);
-  const lintel = new THREE.Mesh(new THREE.BoxGeometry(13.5,2.2,3.4), stoneMat);
-  lintel.position.set(0,11.8,0); lintel.castShadow=lintel.receiveShadow=true;
-  stonehenge.add(lintel);
+  const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
+  left.position.set(-6,6,0); left.castShadow = true;
+  const right = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
+  right.position.set(6,6,0); right.castShadow = true;
+  const top = new THREE.Mesh(new THREE.BoxGeometry(15,3,3.5), stoneMat);
+  top.position.set(0,13,0); top.castShadow = true;
 
-  // Weathering
-  const detailMat = new THREE.MeshStandardMaterial({color:0x696662, roughness:1});
-  for(let i=0;i<20;i++){
-    const d = new THREE.Mesh(new THREE.BoxGeometry(0.6,1,0.2), detailMat);
-    d.position.set(-5.2+Math.random()*1.2-0.6, 1+Math.random()*9, 1.7);
-    d.rotation.z = Math.random()*0.6-0.3;
-    stonehenge.add(d);
-  }
-  for(let i=0;i<20;i++){
-    const d = new THREE.Mesh(new THREE.BoxGeometry(0.6,1,0.2), detailMat);
-    d.position.set(5.2+Math.random()*1.2-0.6, 1+Math.random()*9, 1.7);
-    stonehenge.add(d);
-  }
+  stonehenge.add(left,right,top);
 
-  // Aura
+  // Aura glow
   const aura = new THREE.Mesh(
-    new THREE.SphereGeometry(11,32,16),
-    new THREE.MeshBasicMaterial({color:0xaaddff, transparent:true, opacity:0.15})
+    new THREE.SphereGeometry(12,32,16),
+    new THREE.MeshBasicMaterial({color:0x88ccff, transparent:true, opacity:0.2})
   );
-  aura.position.y = 6;
+  aura.position.y = 7;
   stonehenge.add(aura);
   scene.add(stonehenge);
 
-  // === CHESTS + TREES (facing center) ===
+  // === ALBUMS ===
   const albums = [
     {title:"Optima Box: The Future Is Inviting",url:"https://on.soundcloud.com/nWSYB7e87sdZaWxtT9",art:"https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg",poem:"Neon leaves hum tomorrow..."},
     {title:"Wisdom Box: As We Learn Cycling",url:"https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj",art:"https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg",poem:"Wheels wobble, lessons sting..."},
@@ -140,41 +100,61 @@
     {title:"Energy Box: Time Is Here",url:"https://on.soundcloud.com/QNehEABnSeSodbnKWF",art:"https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg",poem:"Pulse now, the moment ignites..."}
   ];
 
-  const chests = [];
-  function createChest(album,x,z){
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3,1.8,2.2), new THREE.MeshStandardMaterial({color:0x8B4513}));
-    const lid = new THREE.Mesh(new THREE.BoxGeometry(3.1,0.4,2.3), new THREE.MeshStandardMaterial({color:0xA0522D}));
-    lid.position.y=1.1; g.add(body); g.add(lid);
-
-    // Logo panel П
-    const cnv = document.createElement('canvas'); cnv.width=cnv.height=256;
-    const c = cnv.getContext('2d');
-    c.fillStyle='#8B0000'; c.fillRect(0,0,256,256);
-    c.strokeStyle='#FFD700'; c.lineWidth=22;
-    c.strokeRect(20,20,216,216); c.strokeRect(50,50,156,156);
-    c.font='bold 140px Arial'; c.fillStyle='#FFD700'; c.textAlign='center'; c.fillText('П',128,180);
-    const tex = new THREE.CanvasTexture(cnv);
-    const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.4), new THREE.MeshStandardMaterial({map:tex, emissive:0xff3366, emissiveIntensity:0.4}));
-    panel.position.set(0,0.5,1.11);
-    g.add(panel);
-
-    g.position.set(x,0,z);
-    g.lookAt(0,0,0);
-    g.userData = {type:'chest', album};
-    scene.add(g);
-    chests.push(g);
-  }
-
-  albums.forEach((a,i)=>{
+  // === TREES + CHESTS (chest at trunk, facing center) ===
+  const radius = 32;
+  albums.forEach((album,i)=>{
     const angle = (i/albums.length)*Math.PI*2;
-    const dist = 28;
-    const x = Math.cos(angle)*dist;
-    const z = Math.sin(angle)*dist;
-    createChest(a,x,z);
-    // Tree 6m behind the chest
-    createTree(x + Math.cos(angle)*6, z + Math.sin(angle)*6, 0.9);
+    const x = Math.cos(angle)*radius;
+    const z = Math.sin(angle)*radius;
+
+    // Tree
+    const tree = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.4,2,16,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
+    trunk.position.y = 8;
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(7,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
+    leaves.position.y = 16;
+    tree.add(trunk,leaves);
+    tree.position.set(x,0,z);
+    scene.add(tree);
+
+    // Chest at trunk base, facing center
+    const chest = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.2,2,2.4), new THREE.MeshStandardMaterial({color:0x8B4513}));
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(3.3,0.5,2.5), new THREE.MeshStandardMaterial({color:0xA0522D}));
+    lid.position.y = 1.25;
+    chest.add(body,lid);
+
+    // Your П logo
+    const cnv = document.createElement('canvas'); cnv.width=cnv.height=256;
+    const ctx = cnv.getContext('2d');
+    ctx.fillStyle='#8B0000'; ctx.fillRect(0,0,256,256);
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=24;
+    ctx.strokeRect(18,18,220,220); ctx.strokeRect(48,48,160,160);
+    ctx.font='bold 146px Arial'; ctx.fillStyle='#FFD700'; ctx.textAlign='center'; ctx.fillText('П',128,182);
+    const tex = new THREE.CanvasTexture(cnv);
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.6), new THREE.MeshStandardMaterial({map:tex, emissive:0xff3366, emissiveIntensity:0.4}));
+    panel.position.set(0,0.6,1.21);
+    chest.add(panel);
+
+    chest.position.set(x,z,0);
+    chest.lookAt(0,0,0);
+    chest.userData = {type:'chest', album};
+    scene.add(chest);
   });
+
+  // === INFINITE BACKGROUND FOREST ===
+  for(let i=0;i<200;i++){
+    const a = Math.random()*Math.PI*2;
+    const d = 70 + Math.random()*400;
+    const tree = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1,1.6,14,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
+    trunk.position.y = 7;
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(6,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
+    leaves.position.y = 14;
+    tree.add(trunk,leaves);
+    tree.position.set(Math.cos(a)*d,0,Math.sin(a)*d);
+    scene.add(tree);
+  }
 
   // === INTERACTION ===
   const raycaster = new THREE.Raycaster();
@@ -188,12 +168,12 @@
     raycaster.setFromCamera(mouse,camera);
     const hits = raycaster.intersectObjects(scene.children,true);
     let found = null;
-    for(let h of hits){ if(h.object.parent?.userData.type==='chest'){ found=h.object.parent; break; }}
+    for(let h of hits){ if(h.object.parent?.userData?.type==='chest'){ found=h.object.parent; break; }}
     if(found!==hovered){
       if(hovered) hovered.scale.set(1,1,1);
       hovered = found;
       if(hovered){
-        hovered.scale.set(1.12,1.12,1.12);
+        hovered.scale.set(1.15,1.15,1.15);
         tooltip.textContent = hovered.userData.album.title.split(':')[0] + ' – ' + hovered.userData.album.poem;
         tooltip.style.left = (e.clientX+15)+'px';
         tooltip.style.top = (e.clientY+15)+'px';
@@ -213,41 +193,30 @@
   });
   document.querySelector('.close-btn').onclick = () => document.getElementById('album-panel').style.display='none';
 
-  // === MOUSE SWAY (Claude style) ===
-  let mx=0, my=0;
-  window.addEventListener('mousemove', e=>{
-    mx = (e.clientX/innerWidth)*2-1;
-    my = -(e.clientY/innerHeight)*2+1;
-  });
-
-  // === AUDIO REACTIVITY (placeholder – full version tomorrow if needed) ===
-  let analyser=null, dataArray=null, isPlaying=false;
-  // (we’ll add proper Web Audio API tomorrow – right now it just looks perfect)
-
+  // === CAMERA ORBIT ===
+  camera.position.set(0,18,60);
+  let theta = 0;
   const clock = new THREE.Clock();
   function animate(){
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    // Gentle mouse sway
-    stonehenge.rotation.y += (mx*0.7 - stonehenge.rotation.y)*0.05;
+    // Auto slow orbit + gentle pulse
+    theta += 0.0002;
+    camera.position.x = Math.sin(theta)*60;
+    camera.position.z = Math.cos(theta)*60;
+    camera.lookAt(0,6,0);
 
-    // Fake pulse until real audio tomorrow
-    const fakeBass = Math.sin(t*2)*0.3 + 0.7;
-    stonehenge.scale.setScalar(1 + fakeBass*0.1);
-    aura.material.opacity = 0.15 + fakeBass*0.3;
+    // Monument breathes (real bass tomorrow)
+    const pulse = 1 + Math.sin(t*1.2)*0.04;
+    stonehenge.scale.setScalar(pulse);
+    aura.material Opus = 0.2 + Math.sin(t*1.5)*0.1;
 
     renderer.render(scene,camera);
   }
   animate();
 
-  window.addEventListener('resize',()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-  });
-
-  console.log('THE FOREST IS BACK — v0.4 COMPLETE');
+  window.addEventListener('resize',()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 </script>
 </body>
 </html>
