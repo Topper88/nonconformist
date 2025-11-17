@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Seven v0.5.2</title>
+<title>п o п c o п f o r m i s t | The Spinning Circle v0.6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -21,8 +21,9 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Seven v0.5.2 — FINAL CLEAN</em><br><br>
-  Orbit • Click a chest • Feel the circle<br>
+  <em>The Spinning Circle v0.6</em><br><br>
+  Drag to rotate around the monument<br>
+  Click a chest to listen<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -72,7 +73,7 @@
   ground.position.y = -1;
   scene.add(ground);
 
-  // === CENTRAL STONEHENGE ===
+  // CENTRAL STONEHENGE
   const stonehenge = new THREE.Group();
   const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
 
@@ -98,7 +99,7 @@
   stonehenge.add(aura);
   scene.add(stonehenge);
 
-  // === ALBUMS & CIRCLE OF SEVEN ===
+  // ALBUMS
   const albums = [
     {title:"Optima Box: The Future Is Inviting",url:"https://on.soundcloud.com/nWSYB7e87sdZaWxtT9",art:"https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg",poem:"Neon leaves hum tomorrow..."},
     {title:"Wisdom Box: As We Learn Cycling",url:"https://on.soundcloud.com/Mw8UtbDGZ7QhLD61jj",art:"https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg",poem:"Wheels wobble, lessons sting..."},
@@ -109,11 +110,11 @@
     {title:"Energy Box: Time Is Here",url:"https://on.soundcloud.com/QNehEABnSeSodbnKWF",art:"https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg",poem:"Pulse now, the moment ignites..."}
   ];
 
-  const radius = 32;
+  const circleRadius = 32;
   albums.forEach((album,i)=>{
     const angle = (i/albums.length)*Math.PI*2;
-    const x = Math.cos(angle)*radius;
-    const z = Math.sin(angle)*radius;
+    const x = Math.cos(angle)*circleRadius;
+    const z = Math.sin(angle)*circleRadius;
 
     // Tree
     const tree = new THREE.Group();
@@ -176,11 +177,7 @@
     raycaster.setFromCamera(mouse,camera);
     const hits = raycaster.intersectObjects(scene.children,true);
     let found = null;
-    for(let h of hits){
-      if(h.object.parent && h.object.parent.userData && h.object.parent.userData.type==='chest'){
-        found = h.object.parent; break;
-      }
-    }
+    for(let h of hits){ if(h.object.parent?.userData.type==='chest'){ found=h.object.parent; break; }}
     if(found!==hovered){
       if(hovered) hovered.scale.set(1,1,1);
       hovered = found;
@@ -201,10 +198,9 @@
     document.getElementById('player-container').innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${a.url}&color=%235ab&auto_play=true"></iframe>`;
     document.getElementById('album-panel').style.display = 'block';
   }});
-
   document.querySelector('.close-btn').onclick = () => document.getElementById('album-panel').style.display='none';
 
-  // Animation
+  // Camera + animation
   camera.position.set(0,18,60);
   let theta = 0;
   const clock = new THREE.Clock();
@@ -225,13 +221,7 @@
   }
   animate();
 
-  window.addEventListener('resize',()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-  });
-
-  console.log('The Circle of Seven v0.5.2 — CLEAN & PERFECT');
+  window.addEventListener('resize',()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 </script>
 </body>
 </html>
