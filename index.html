@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Pulsing Circle v0.7.1</title>
+<title>п o п c o п f o r m i s t | The Symphony of Seven v0.7.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -14,19 +14,22 @@
   .close-btn:hover { color:#fff; }
   #cc { position:absolute; bottom:20px; right:20px; color:#666; font-size:11px; z-index:10; }
   #cc a { color:#8cf; text-decoration:none; }
-  #player-bubble { position:absolute; bottom:30px; right:30px; width:60px; height:60px; background:rgba(100,180,255,0.7); border-radius:50%; cursor:pointer; z-index:150; text-align:center; line-height:60px; font-size:32px; color:#fff; backdrop-filter:blur(10px); border:2px solid #88ccff; box-shadow:0 0 20px rgba(100,180,255,0.6); display:none; }
+  #player-bubble { position:absolute; bottom:30px; right:30px; width:60px; height:60px; background:rgba(100,180,255,0.7); border-radius:50%; cursor:pointer; z-index:150; text-align:center; line-height:60px; font-size:32px; color:#fff; backdrop-filter:blur(10px); border:2px solid #88ccff; box-shadow:0 0 20px rgba(100,180,255,0.6); display:none; transition:transform 0.2s; }
   #player-bubble:hover { background:rgba(100,180,255,0.9); transform:scale(1.1); }
+  #hidden-audio { display:none; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script src="https://w.soundcloud.com/player/api.js"></script>
 </head>
 <body>
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Pulsing Circle v0.7.1</em><br><br>
+  <em>The Symphony of Seven v0.7.2</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click chest/fruit → play<br>
   ♪ bubble = toggle player<br>
+  Fruits pulse to bass<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -40,6 +43,7 @@
 </div>
 
 <div id="player-bubble">♪</div>
+<audio id="hidden-audio" crossorigin="anonymous"></audio>
 
 <script>
   const scene = new THREE.Scene();
@@ -156,7 +160,7 @@
     leaves.position.y = 17;
     tree.add(trunk,leaves);
 
-    // 12 FRUITS on canopy surface
+    // 12 FRUITS on canopy surface — each with track link
     for(let f=0; f<12; f++){
       const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
       const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
@@ -174,7 +178,7 @@
     tree.position.set(x,0,z);
     scene.add(tree);
 
-    // CHEST IN FRONT
+    // CHEST IN FRONT — linked to playlist
     const chestX = x - Math.cos(angle)*5;
     const chestZ = z - Math.sin(angle)*5;
     const chest = new THREE.Group();
@@ -247,63 +251,102 @@
     }
   });
 
-  // PLAYER BUBBLE + LAST PLAYED STATE
+  // PLAYER BUBBLE + LAST PLAYED
   let lastUrl = '';
   let lastTitle = '';
   let lastArt = '';
   let lastType = '';
+  let widget = null;
+  let audioContext = null;
+  let analyser = null;
+  let dataArray = null;
+  const clientId = 'iZIs9mchVcX5nlL1qIcVJa8LWkA14ovh'; // Public SoundCloud client ID
 
   const playerBubble = document.getElementById('player-bubble');
   playerBubble.onclick = () => {
     const panel = document.getElementById('album-panel');
     if (panel.style.display === 'block') {
       panel.style.display = 'none';
+      if (widget) widget.pause();
     } else {
       panel.style.display = 'block';
-      document.getElementById('album-title').textContent = lastTitle;
-      document.getElementById('album-art').src = lastArt;
-      document.getElementById('player-container').innerHTML = `<iframe width="100%" height="${lastType === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${lastUrl}&color=%235ab&auto_play=false"></iframe>`;
+      if (widget) widget.play();
     }
   };
 
-  window.addEventListener('click',()=>{ if(hovered){
-    const type = hovered.userData.type;
-    const url = hovered.userData.url || hovered.userData.album.playlist;
-    const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
-    const art = hovered.userData.album?.art || '';
+  async function loadTrack(url, title, art, type) {
     lastUrl = url;
     lastTitle = title;
     lastArt = art;
     lastType = type;
     document.getElementById('album-title').textContent = title;
     document.getElementById('album-art').src = art;
-    document.getElementById('player-container').innerHTML = `<iframe width="100%" height="${type === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
+    document.getElementById('player-container').innerHTML = `<iframe id="sc-widget" width="100%" height="${type === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
     document.getElementById('album-panel').style.display = 'block';
     playerBubble.style.display = 'block';
+
+    // SC.Widget
+    const iframe = document.getElementById('sc-widget');
+    widget = SC.Widget(iframe);
+
+    // Web Audio for bass
+    if (!audioContext) {
+      audioContext = new AudioContext();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+    }
+
+    // Get track ID and stream URL
+    const resolveUrl = `https://api.soundcloud.com/resolve?url=${url}&client_id=${clientId}`;
+    const resolveResponse = await fetch(resolveUrl);
+    const resolveJson = await resolveResponse.json();
+    const trackId = resolveJson.id;
+    const streamUrl = `https://api.soundcloud.com/tracks/${trackId}/stream?client_id=${clientId}`;
+
+    const hiddenAudio = document.getElementById('hidden-audio');
+    hiddenAudio.src = streamUrl;
+    hiddenAudio.play().catch(e => console.log('Audio play error', e));
+    const source = audioContext.createMediaElementSource(hiddenAudio);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+  }
+
+  window.addEventListener('click',()=>{ if(hovered){
+    const type = hovered.userData.type;
+    const url = hovered.userData.url || hovered.userData.album.playlist;
+    const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
+    const art = hovered.userData.album?.art || '';
+    loadTrack(url, title, art, type);
   }});
 
   document.querySelector('.close-btn').onclick = () => {
     document.getElementById('album-panel').style.display = 'none';
+    if (widget) widget.pause();
   };
 
-  // Animation + Strong Fake Bass Pulse (real audio tomorrow)
+  // Animation + Real Bass Pulse
   const clock = new THREE.Clock();
   function animate(){
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    // Strong fake bass pulse
-    const fakeBass = Math.abs(Math.sin(t * 3)) * 0.8 + Math.sin(t * 8) * 0.2;
+    let bass = 0;
+    if (analyser) {
+      analyser.getByteFrequencyData(dataArray);
+      bass = dataArray.slice(0, 8).reduce((a,b) => a+b, 0) / 8 / 255 * 0.8; // Tuned gentler
+    } else {
+      bass = Math.sin(t * 3) * 0.3 + 0.3; // Gentle fake if no audio
+    }
 
-    stonehenge.scale.setScalar(1 + fakeBass * 0.3);
-    aura.material.opacity = 0.2 + fakeBass * 0.6;
-    aura.material.color.setHSL(0.6, 1, 0.5 + fakeBass * 0.3);
+    stonehenge.scale.setScalar(1 + bass * 0.2); // Gentle
+    aura.material.opacity = 0.2 + bass * 0.4;
+    aura.material.color.setHSL(0.6, 1, 0.5 + bass * 0.2);
 
-    // Fruits pulse
     scene.traverse(obj => {
       if (obj.userData && obj.userData.type === 'fruit') {
-        obj.scale.setScalar(0.5 + fakeBass * 0.8);
-        obj.material.emissiveIntensity = 0.6 + fakeBass * 2;
+        obj.scale.setScalar(1 + bass * 0.5); // Gentle
+        obj.material.emissiveIntensity = 0.6 + bass * 1.2;
       }
     });
 
