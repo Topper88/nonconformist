@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Trees Bear Music v0.6.3</title>
+<title>п o п c o п f o r m i s t | The Pulsing Circle v0.7</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -14,6 +14,8 @@
   .close-btn:hover { color:#fff; }
   #cc { position:absolute; bottom:20px; right:20px; color:#666; font-size:11px; z-index:10; }
   #cc a { color:#8cf; text-decoration:none; }
+  #player-bubble { position:absolute; bottom:60px; right:20px; width:50px; height:50px; background:rgba(100,180,255,0.5); border-radius:50%; cursor:pointer; z-index:10; text-align:center; line-height:50px; font-size:24px; color:#fff; backdrop-filter:blur(5px); display:none; }
+  #player-bubble:hover { background:rgba(100,180,255,0.7); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
 </head>
@@ -21,11 +23,10 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Trees Bear Music v0.6.3</em><br><br>
-  Drag to orbit • Scroll to zoom<br>
-  Click a chest → playlist<br>
-  Click a fruit → track<br>
-  <a href="https://ko-fi.com/n_nconformist" target="_blank">Drop some crumbles if it moved you</a>
+  <em>The Pulsing Circle v0.7</em><br><br>
+  Drag to orbit • Scroll to zoom • Click chest/fruit<br>
+  Bubble toggles player • Bass pulses the world<br>
+  <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
 <div id="cc"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a></div>
@@ -36,6 +37,8 @@
   <img id="album-art" width="100%" style="border-radius:12px; margin:16px 0;">
   <div id="player-container"></div>
 </div>
+
+<div id="player-bubble">♪</div>
 
 <script>
   const scene = new THREE.Scene();
@@ -129,13 +132,13 @@
 
   // ALBUMS WITH PLAYLISTS AND TRACKS
   const albums = [
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/wisdom-box", tracks: ["https://soundcloud.com/musique_residentielle/wb_01","https://soundcloud.com/musique_residentielle/wb_02","https://soundcloud.com/musique_residentielle/wb_03","https://soundcloud.com/musique_residentielle/wb_04","https://soundcloud.com/musique_residentielle/wb_05","https://soundcloud.com/musique_residentielle/wb_06","https://soundcloud.com/musique_residentielle/wb_07","https://soundcloud.com/musique_residentielle/wb_08","https://soundcloud.com/musique_residentielle/wb_09","https://soundcloud.com/musique_residentielle/wb_10","https://soundcloud.com/musique_residentielle/wb_11","https://soundcloud.com/musique_residentielle/wb_12"], title: "Wisdom Box", art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg"},
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/energy-box", tracks: ["https://soundcloud.com/musique_residentielle/eb_01","https://soundcloud.com/musique_residentielle/eb_02","https://soundcloud.com/musique_residentielle/eb_03","https://soundcloud.com/musique_residentielle/eb_04","https://soundcloud.com/musique_residentielle/eb_05","https://soundcloud.com/musique_residentielle/eb_06","https://soundcloud.com/musique_residentielle/eb_07","https://soundcloud.com/musique_residentielle/eb_08","https://soundcloud.com/musique_residentielle/eb_09","https://soundcloud.com/musique_residentielle/eb_10","https://soundcloud.com/musique_residentielle/eb_11","https://soundcloud.com/musique_residentielle/eb_12"], title: "Energy Box", art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg"},
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/mystery-box", tracks: ["https://soundcloud.com/musique_residentielle/mb_01","https://soundcloud.com/musique_residentielle/mb_02","https://soundcloud.com/musique_residentielle/mb_03","https://soundcloud.com/musique_residentielle/mb_04","https://soundcloud.com/musique_residentielle/mb_05","https://soundcloud.com/musique_residentielle/mb_06","https://soundcloud.com/musique_residentielle/mb_07","https://soundcloud.com/musique_residentielle/mb_08","https://soundcloud.com/musique_residentielle/mb_09","https://soundcloud.com/musique_residentielle/mb_10","https://soundcloud.com/musique_residentielle/mb_11","https://soundcloud.com/musique_residentielle/mb_12"], title: "Mystery Box", art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg"},
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/optima-box", tracks: ["https://soundcloud.com/musique_residentielle/ob_01","https://soundcloud.com/musique_residentielle/ob_02","https://soundcloud.com/musique_residentielle/ob_03","https://soundcloud.com/musique_residentielle/ob_04","https://soundcloud.com/musique_residentielle/ob_05","https://soundcloud.com/musique_residentielle/ob_06","https://soundcloud.com/musique_residentielle/ob_07","https://soundcloud.com/musique_residentielle/ob_08","https://soundcloud.com/musique_residentielle/ob_09","https://soundcloud.com/musique_residentielle/ob_10","https://soundcloud.com/musique_residentielle/ob_11","https://soundcloud.com/musique_residentielle/ob_12"], title: "Optima Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg"},
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/therapy-box", tracks: ["https://soundcloud.com/musique_residentielle/tb_01","https://soundcloud.com/musique_residentielle/tb_02","https://soundcloud.com/musique_residentielle/tb_03","https://soundcloud.com/musique_residentielle/tb_04","https://soundcloud.com/musique_residentielle/tb_05","https://soundcloud.com/musique_residentielle/tb_06","https://soundcloud.com/musique_residentielle/tb_07","https://soundcloud.com/musique_residentielle/tb_08","https://soundcloud.com/musique_residentielle/tb_09","https://soundcloud.com/musique_residentielle/tb_10","https://soundcloud.com/musique_residentielle/tb_11","https://soundcloud.com/musique_residentielle/tb_12"], title: "Therapy Box", art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg"},
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/romantic-box", tracks: ["https://soundcloud.com/musique_residentielle/rb_01","https://soundcloud.com/musique_residentielle/rb_02","https://soundcloud.com/musique_residentielle/rb_03","https://soundcloud.com/musique_residentielle/rb_04","https://soundcloud.com/musique_residentielle/rb_05","https://soundcloud.com/musique_residentielle/rb_06","https://soundcloud.com/musique_residentielle/rb_07","https://soundcloud.com/musique_residentielle/rb_08","https://soundcloud.com/musique_residentielle/rb_09","https://soundcloud.com/musique_residentielle/rb_10","https://soundcloud.com/musique_residentielle/rb_11","https://soundcloud.com/musique_residentielle/rb_12"], title: "Romantic Box", art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg"},
-    {playlist: "https://soundcloud.com/musique_residentielle/sets/fiesta-box", tracks: ["https://soundcloud.com/musique_residentielle/fb_01","https://soundcloud.com/musique_residentielle/fb_02","https://soundcloud.com/musique_residentielle/fb_03","https://soundcloud.com/musique_residentielle/fb_04","https://soundcloud.com/musique_residentielle/fb_05","https://soundcloud.com/musique_residentielle/fb_06","https://soundcloud.com/musique_residentielle/fb_07","https://soundcloud.com/musique_residentielle/fb_08","https://soundcloud.com/musique_residentielle/fb_09","https://soundcloud.com/musique_residentielle/fb_10","https://soundcloud.com/musique_residentielle/fb_11","https://soundcloud.com/musique_residentielle/fb_12"], title: "Fiesta Box", art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg"}
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/wisdom-box", tracks: ["https://soundcloud.com/musique_residentielle/wb_01","https://soundcloud.com/musique_residentielle/wb_02","https://soundcloud.com/musique_residentielle/wb_03","https://soundcloud.com/musique_residentielle/wb_04","https://soundcloud.com/musique_residentielle/wb_05","https://soundcloud.com/musique_residentielle/wb_06","https://soundcloud.com/musique_residentielle/wb_07","https://soundcloud.com/musique_residentielle/wb_08","https://soundcloud.com/musique_residentielle/wb_09","https://soundcloud.com/musique_residentielle/wb_10","https://soundcloud.com/musique_residentielle/wb_11","https://soundcloud.com/musique_residentielle/wb_12"], title: "Wisdom Box", art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg", poem: "Wheels wobble, lessons sting..."},
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/energy-box", tracks: ["https://soundcloud.com/musique_residentielle/eb_01","https://soundcloud.com/musique_residentielle/eb_02","https://soundcloud.com/musique_residentielle/eb_03","https://soundcloud.com/musique_residentielle/eb_04","https://soundcloud.com/musique_residentielle/eb_05","https://soundcloud.com/musique_residentielle/eb_06","https://soundcloud.com/musique_residentielle/eb_07","https://soundcloud.com/musique_residentielle/eb_08","https://soundcloud.com/musique_residentielle/eb_09","https://soundcloud.com/musique_residentielle/eb_10","https://soundcloud.com/musique_residentielle/eb_11","https://soundcloud.com/musique_residentielle/eb_12"], title: "Energy Box", art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg", poem: "Pulse now, the moment ignites..."},
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/mystery-box", tracks: ["https://soundcloud.com/musique_residentielle/mb_01","https://soundcloud.com/musique_residentielle/mb_02","https://soundcloud.com/musique_residentielle/mb_03","https://soundcloud.com/musique_residentielle/mb_04","https://soundcloud.com/musique_residentielle/mb_05","https://soundcloud.com/musique_residentielle/mb_06","https://soundcloud.com/musique_residentielle/mb_07","https://soundcloud.com/musique_residentielle/mb_08","https://soundcloud.com/musique_residentielle/mb_09","https://soundcloud.com/musique_residentielle/mb_10","https://soundcloud.com/musique_residentielle/mb_11","https://soundcloud.com/musique_residentielle/mb_12"], title: "Mystery Box", art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg", poem: "Truth hides in the rain..."},
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/optima-box", tracks: ["https://soundcloud.com/musique_residentielle/ob_01","https://soundcloud.com/musique_residentielle/ob_02","https://soundcloud.com/musique_residentielle/ob_03","https://soundcloud.com/musique_residentielle/ob_04","https://soundcloud.com/musique_residentielle/ob_05","https://soundcloud.com/musique_residentielle/ob_06","https://soundcloud.com/musique_residentielle/ob_07","https://soundcloud.com/musique_residentielle/ob_08","https://soundcloud.com/musique_residentielle/ob_09","https://soundcloud.com/musique_residentielle/ob_10","https://soundcloud.com/musique_residentielle/ob_11","https://soundcloud.com/musique_residentielle/ob_12"], title: "Optima Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg", poem: "Neon leaves hum tomorrow..."},
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/therapy-box", tracks: ["https://soundcloud.com/musique_residentielle/tb_01","https://soundcloud.com/musique_residentielle/tb_02","https://soundcloud.com/musique_residentielle/tb_03","https://soundcloud.com/musique_residentielle/tb_04","https://soundcloud.com/musique_residentielle/tb_05","https://soundcloud.com/musique_residentielle/tb_06","https://soundcloud.com/musique_residentielle/tb_07","https://soundcloud.com/musique_residentielle/tb_08","https://soundcloud.com/musique_residentielle/tb_09","https://soundcloud.com/musique_residentielle/tb_10","https://soundcloud.com/musique_residentielle/tb_11","https://soundcloud.com/musique_residentielle/tb_12"], title: "Therapy Box", art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg", poem: "Silence grows in tiny hearts..."},
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/romantic-box", tracks: ["https://soundcloud.com/musique_residentielle/rb_01","https://soundcloud.com/musique_residentielle/rb_02","https://soundcloud.com/musique_residentielle/rb_03","https://soundcloud.com/musique_residentielle/rb_04","https://soundcloud.com/musique_residentielle/rb_05","https://soundcloud.com/musique_residentielle/rb_06","https://soundcloud.com/musique_residentielle/rb_07","https://soundcloud.com/musique_residentielle/rb_08","https://soundcloud.com/musique_residentielle/rb_09","https://soundcloud.com/musique_residentielle/rb_10","https://soundcloud.com/musique_residentielle/rb_11","https://soundcloud.com/musique_residentielle/rb_12"], title: "Romantic Box", art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg", poem: "Ashen hands, I see the stain..."},
+    {playlist: "https://soundcloud.com/musique_residentielle/sets/fiesta-box", tracks: ["https://soundcloud.com/musique_residentielle/fb_01","https://soundcloud.com/musique_residentielle/fb_02","https://soundcloud.com/musique_residentielle/fb_03","https://soundcloud.com/musique_residentielle/fb_04","https://soundcloud.com/musique_residentielle/fb_05","https://soundcloud.com/musique_residentielle/fb_06","https://soundcloud.com/musique_residentielle/fb_07","https://soundcloud.com/musique_residentielle/fb_08","https://soundcloud.com/musique_residentielle/fb_09","https://soundcloud.com/musique_residentielle/fb_10","https://soundcloud.com/musique_residentielle/fb_11","https://soundcloud.com/musique_residentielle/fb_12"], title: "Fiesta Box", art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg", poem: "Each spark remembers its tree..."}
   ];
 
   const radiusCircle = 34;
@@ -152,7 +155,7 @@
     leaves.position.y = 17;
     tree.add(trunk,leaves);
 
-    // 12 FRUITS — each linked to its track
+    // 12 FRUITS on canopy surface — each with track link
     for(let f=0; f<12; f++){
       const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
       const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
@@ -170,7 +173,7 @@
     tree.position.set(x,0,z);
     scene.add(tree);
 
-    // CHEST IN FRONT — linked to playlist
+    // CHEST
     const chestX = x - Math.cos(angle)*5;
     const chestZ = z - Math.sin(angle)*5;
     const chest = new THREE.Group();
@@ -244,12 +247,13 @@
   });
 
   window.addEventListener('click',()=>{ if(hovered){
+    const type = hovered.userData.type;
     const url = hovered.userData.url || hovered.userData.album.playlist;
-    const title = hovered.userData.type === 'fruit' ? 'Track' : hovered.userData.album.title;
+    const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
     const art = hovered.userData.album?.art || '';
     document.getElementById('album-title').textContent = title;
     document.getElementById('album-art').src = art;
-    document.getElementById('player-container').innerHTML = `<iframe width="100%" height="${hovered.userData.type === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
+    document.getElementById('player-container').innerHTML = `<iframe width="100%" height="${type === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
     document.getElementById('album-panel').style.display = 'block';
   }});
 
