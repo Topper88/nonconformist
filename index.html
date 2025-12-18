@@ -2,30 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Symphony of Seven v0.7.2</title>
+<title>п o п c o п f o r m i s t | The Game of Fate v0.7.3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
   #info { position:absolute; top:20px; left:20px; color:#ddd; background:rgba(0,0,0,0.6); padding:15px; border-radius:12px; max-width:340px; backdrop-filter:blur(10px); z-index:10; border:1px solid #334; }
   #info a { color:#8cf; }
-  .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
-  .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.5); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
+  .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity=0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
+  .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.98); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
   .close-btn { position:absolute; top:12px; right:16px; font-size:28px; cursor:pointer; color:#aaa; }
   .close-btn:hover { color:#fff; }
   #cc { position:absolute; bottom:20px; right:20px; color:#666; font-size:11px; z-index:10; }
   #cc a { color:#8cf; text-decoration:none; }
   #player-bubble { position:absolute; bottom:30px; right:30px; width:60px; height:60px; background:rgba(100,180,255,0.7); border-radius:50%; cursor:pointer; z-index:150; text-align:center; line-height:60px; font-size:32px; color:#fff; backdrop-filter:blur(10px); border:2px solid #88ccff; box-shadow:0 0 20px rgba(100,180,255,0.6); display:none; transition:transform 0.2s; }
   #player-bubble:hover { background:rgba(100,180,255,0.9); transform:scale(1.1); }
+  #game-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.98); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; text-align:center; }
+  #game-panel h3 { margin-bottom:20px; }
+  #dice-result { font-size:24px; margin:20px 0; }
+  #roll-btn { background:#5ab; color:#fff; border:none; padding:14px; border-radius:10px; cursor:pointer; font-weight:bold; width:100%; font-size:16px; }
+  #roll-btn:hover { background:#6bc; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
-<script src="https://w.soundcloud.com/player/api.js"></script>
 </head>
 <body>
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Symphony of Seven v0.7.2</em><br><br>
+  <em>The Game of Fate v0.7.3</em><br><br>
   Drag to orbit • Scroll to zoom • Click chest/fruit → play<br>
+  Click Stonehenge → roll dice game<br>
   ♪ bubble = toggle player • Bass pulses the world<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
@@ -40,7 +45,13 @@
 </div>
 
 <div id="player-bubble">♪</div>
-<audio id="hidden-audio" crossorigin="anonymous"></audio>
+
+<div id="game-panel" class="album-panel">
+  <div class="close-btn">×</div>
+  <h3>Roll the Dice of Fate</h3>
+  <div id="dice-result"></div>
+  <button id="roll-btn">Roll</button>
+</div>
 
 <script>
   const scene = new THREE.Scene();
@@ -265,10 +276,10 @@
     const panel = document.getElementById('album-panel');
     if (panel.style.display === 'block') {
       panel.style.display = 'none';
-      // Do not pause music
+      // Music continues
     } else {
       panel.style.display = 'block';
-      // Music continues if was playing
+      // Music continues
     }
   };
 
@@ -301,7 +312,7 @@
     const resolveJson = await resolveResponse.json();
     let trackId = resolveJson.id;
     if (resolveJson.kind === 'playlist') {
-      trackId = resolveJson.tracks[0].id; // First track for playlist analysis
+      trackId = resolveJson.tracks[0].id; // First track for analysis
     }
     const streamUrl = `https://api.soundcloud.com/tracks/${trackId}/stream?client_id=${clientId}`;
 
@@ -323,7 +334,7 @@
 
   document.querySelector('.close-btn').onclick = () => {
     document.getElementById('album-panel').style.display = 'none';
-    // Do not pause - music continues
+    // Music continues
   };
 
   // Animation + Real Bass Pulse (tuned gentler)
@@ -335,19 +346,19 @@
     let bass = 0;
     if (analyser) {
       analyser.getByteFrequencyData(dataArray);
-      bass = dataArray.slice(0, 8).reduce((a,b) => a+b, 0) / 8 / 255 * 0.4; // Gentler
+      bass = dataArray.slice(0, 8).reduce((a,b) => a+b, 0) / 8 / 255 * 0.3; // Gentler
     } else {
-      bass = Math.sin(t * 3) * 0.2 + 0.2;
+      bass = Math.sin(t * 3) * 0.15 + 0.15;
     }
 
-    stonehenge.scale.setScalar(1 + bass * 0.12); // Gentler
+    stonehenge.scale.setScalar(1 + bass * 0.1); // Gentle
     aura.material.opacity = 0.2 + bass * 0.3;
     aura.material.color.setHSL(0.6, 1, 0.5 + bass * 0.15);
 
     scene.traverse(obj => {
       if (obj.userData && obj.userData.type === 'fruit') {
-        obj.scale.setScalar(1 + bass * 0.3); // Gentler
-        obj.material.emissiveIntensity = 0.6 + bass * 0.8;
+        obj.scale.setScalar(1 + bass * 0.2); // Gentler
+        obj.material.emissiveIntensity = 0.6 + bass * 0.6;
       }
     });
 
