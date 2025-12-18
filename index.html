@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.3</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -71,16 +71,19 @@
     ground.position.y = -1;
     scene.add(ground);
 
-    // Stonehenge
+    // Stonehenge — now properly clickable
     const stonehenge = new THREE.Group();
     stonehenge.userData.type = 'stonehenge';
     const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
     const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
     left.position.set(-6,6,0);
+    left.userData.type = 'stonehenge'; // inherit for detection
     const right = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
     right.position.set(6,6,0);
+    right.userData.type = 'stonehenge';
     const lintel = new THREE.Mesh(new THREE.BoxGeometry(15,3,3.5), stoneMat);
     lintel.position.set(0,13,0);
+    lintel.userData.type = 'stonehenge';
     stonehenge.add(left,right,lintel);
 
     const aura = new THREE.Mesh(new THREE.SphereGeometry(12,32,16), new THREE.MeshBasicMaterial({color:0x88ccff, transparent:true, opacity:0.2}));
@@ -148,7 +151,7 @@
       {playlist: "https://soundcloud.com/musique_residentielle/sets/bonus-box", tracks: ["https://soundcloud.com/musique_residentielle/bb_01","https://soundcloud.com/musique_residentielle/bb_02","https://soundcloud.com/musique_residentielle/bb_03","https://soundcloud.com/musique_residentielle/bb_04","https://soundcloud.com/musique_residentielle/bb_05","https://soundcloud.com/musique_residentielle/bb_06","https://soundcloud.com/musique_residentielle/bb_07","https://soundcloud.com/musique_residentielle/bb_08","https://soundcloud.com/musique_residentielle/bb_09","https://soundcloud.com/musique_residentielle/bb_10","https://soundcloud.com/musique_residentielle/bb_11","https://soundcloud.com/musique_residentielle/bb_12"], title: "Bonus Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg"}
     ];
 
-    // Build Trees, Fruits, Chests
+    // Build Trees, Fruits, Chests (same as before)
     const radiusCircle = 34;
     albums.forEach((album,i)=>{
       const angle = (i/albums.length)*Math.PI*2;
@@ -217,7 +220,7 @@
       scene.add(tree);
     }
 
-    // Dice Modal Setup (now safe inside onload)
+    // Dice Modal Setup
     const diceModal = document.getElementById('dice-modal');
     const diceContainer = document.getElementById('canvas-container');
     const rollBtn = document.getElementById('roll-btn');
@@ -339,7 +342,7 @@
       }
     }
 
-    // Interaction
+    // Interaction — FIXED Stonehenge detection
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -352,24 +355,26 @@
       const hits = raycaster.intersectObjects(scene.children,true);
       let found = null;
       for(let h of hits){
-        if(h.object.parent?.userData?.type === 'stonehenge'){
+        const obj = h.object;
+        const type = obj.userData.type || (obj.parent && obj.parent.userData.type);
+        if(type === 'stonehenge'){
           tooltip.textContent = 'Click to roll the Dice of Fate';
           tooltip.style.opacity = 1;
+          found = stonehenge;
           break;
         }
-        if(h.object.userData && h.object.userData.type==='fruit'){
-          found = h.object; break;
+        if(obj.userData && obj.userData.type==='fruit'){
+          found = obj; break;
         }
-        if(h.object.parent && h.object.parent.userData && h.object.parent.userData.type==='chest'){
-          found = h.object.parent; break;
+        if(obj.parent && obj.parent.userData && obj.parent.userData.type==='chest'){
+          found = obj.parent; break;
         }
       }
-      if(found!==hovered){
+      if(found !== hovered){
         if(hovered) hovered.scale.set(1,1,1);
         hovered = found;
         if(hovered){
           hovered.scale.set(1.15,1.15,1.15);
-          tooltip.textContent = hovered.userData.type === 'fruit' ? 'Click for track' : 'Click for playlist';
           tooltip.style.left = (e.clientX+15)+'px';
           tooltip.style.top = (e.clientY+15)+'px';
           tooltip.style.opacity = 1;
@@ -400,7 +405,7 @@
     }
 
     window.addEventListener('click',()=>{ if(hovered){
-      if(hovered.userData.type === 'stonehenge'){
+      if(hovered.userData.type === 'stonehenge' || (hovered.parent && hovered.parent.userData.type === 'stonehenge')){
         gameMode = true;
         targetRadius = 25;
         targetPhi = Math.PI / 4;
@@ -453,7 +458,7 @@
 <body>
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Destiny v0.8.3</em><br><br>
+  <em>The Circle of Destiny v0.8.4</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click Stonehenge → roll the Dice of Fate<br>
   Click chest/fruit → play<br>
