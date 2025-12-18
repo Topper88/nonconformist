@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Eight v0.7.2</title>
+<title>п o п c o п f o r m i s t | The Symphony of Seven v0.7.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
   #info { position:absolute; top:20px; left:20px; color:#ddd; background:rgba(0,0,0,0.6); padding:15px; border-radius:12px; max-width:340px; backdrop-filter:blur(10px); z-index:10; border:1px solid #334; }
   #info a { color:#8cf; }
   .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
-  .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.98); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
+  .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.5); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
   .close-btn { position:absolute; top:12px; right:16px; font-size:28px; cursor:pointer; color:#aaa; }
   .close-btn:hover { color:#fff; }
   #cc { position:absolute; bottom:20px; right:20px; color:#666; font-size:11px; z-index:10; }
@@ -24,7 +24,7 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Eight v0.7.2</em><br><br>
+  <em>The Symphony of Seven v0.7.2</em><br><br>
   Drag to orbit • Scroll to zoom • Click chest/fruit → play<br>
   ♪ bubble = toggle player • Bass pulses the world<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
@@ -158,7 +158,7 @@
     leaves.position.y = 17;
     tree.add(trunk,leaves);
 
-    // 12 FRUITS on canopy surface
+    // 12 FRUITS on canopy surface — each with track link
     for(let f=0; f<12; f++){
       const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
       const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
@@ -176,7 +176,7 @@
     tree.position.set(x,0,z);
     scene.add(tree);
 
-    // CHEST IN FRONT
+    // CHEST IN FRONT — linked to playlist
     const chestX = x - Math.cos(angle)*5;
     const chestZ = z - Math.sin(angle)*5;
     const chest = new THREE.Group();
@@ -265,12 +265,10 @@
     const panel = document.getElementById('album-panel');
     if (panel.style.display === 'block') {
       panel.style.display = 'none';
-      if (widget) widget.pause();
-      if (audioContext) audioContext.suspend();
+      // Do not pause music
     } else {
       panel.style.display = 'block';
-      if (widget) widget.play();
-      if (audioContext) audioContext.resume();
+      // Music continues if was playing
     }
   };
 
@@ -289,7 +287,7 @@
     const iframe = document.getElementById('sc-widget');
     widget = SC.Widget(iframe);
 
-    // Web Audio for bass
+    // Web Audio
     if (!audioContext) {
       audioContext = new AudioContext();
       analyser = audioContext.createAnalyser();
@@ -301,7 +299,10 @@
     const resolveUrl = `https://api.soundcloud.com/resolve?url=${url}&client_id=${clientId}`;
     const resolveResponse = await fetch(resolveUrl);
     const resolveJson = await resolveResponse.json();
-    const trackId = resolveJson.id ? resolveJson.id : resolveJson.tracks[0].id; // For playlist, take first track
+    let trackId = resolveJson.id;
+    if (resolveJson.kind === 'playlist') {
+      trackId = resolveJson.tracks[0].id; // First track for playlist analysis
+    }
     const streamUrl = `https://api.soundcloud.com/tracks/${trackId}/stream?client_id=${clientId}`;
 
     const hiddenAudio = document.getElementById('hidden-audio');
@@ -322,8 +323,7 @@
 
   document.querySelector('.close-btn').onclick = () => {
     document.getElementById('album-panel').style.display = 'none';
-    if (widget) widget.pause();
-    if (audioContext) audioContext.suspend();
+    // Do not pause - music continues
   };
 
   // Animation + Real Bass Pulse (tuned gentler)
@@ -335,12 +335,12 @@
     let bass = 0;
     if (analyser) {
       analyser.getByteFrequencyData(dataArray);
-      bass = dataArray.slice(0, 8).reduce((a,b) => a+b, 0) / 8 / 255 * 0.3; // Gentler
+      bass = dataArray.slice(0, 8).reduce((a,b) => a+b, 0) / 8 / 255 * 0.4; // Gentler
     } else {
-      bass = Math.sin(t * 3) * 0.15 + 0.15;
+      bass = Math.sin(t * 3) * 0.2 + 0.2;
     }
 
-    stonehenge.scale.setScalar(1 + bass * 0.15); // Gentler
+    stonehenge.scale.setScalar(1 + bass * 0.12); // Gentler
     aura.material.opacity = 0.2 + bass * 0.3;
     aura.material.color.setHSL(0.6, 1, 0.5 + bass * 0.15);
 
