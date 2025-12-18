@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Game of Fate v0.8</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -16,20 +16,48 @@
   #cc a { color:#8cf; text-decoration:none; }
   #player-bubble { position:absolute; bottom:30px; right:30px; width:60px; height:60px; background:rgba(100,180,255,0.7); border-radius:50%; cursor:pointer; z-index:150; text-align:center; line-height:60px; font-size:32px; color:#fff; backdrop-filter:blur(10px); border:2px solid #88ccff; box-shadow:0 0 20px rgba(100,180,255,0.6); display:none; transition:transform 0.2s; }
   #player-bubble:hover { background:rgba(100,180,255,0.9); transform:scale(1.1); }
-  #game-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.95); color:#fff; padding:40px; border-radius:20px; width:420px; box-shadow:0 0 80px rgba(100,180,255,0.8); display:none; z-index:200; backdrop-filter:blur(16px); border:2px solid #88ccff; text-align:center; }
-  #dice-container { font-size:80px; margin:30px 0; }
-  #roll-btn { background:#5ab; color:#fff; border:none; padding:16px 32px; border-radius:12px; cursor:pointer; font-weight:bold; font-size:18px; }
-  #roll-btn:hover { background:#6bc; }
+
+  /* Dice Modal */
+  #dice-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
+    z-index: 1000; visibility: hidden; opacity: 0; transition: opacity 0.3s;
+  }
+  #dice-modal.active { visibility: visible; opacity: 1; }
+  .modal-content {
+    background: #16213e; width: 90%; max-width: 900px; height: 600px; border-radius: 16px;
+    overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  #canvas-container { flex-grow: 1; background: #0f1b2e; }
+  .ui-panel {
+    height: 100px; background: #1a2a44; display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+  }
+  #result-display { font-size: 28px; font-weight: bold; color: #88ccff; }
+  #roll-btn {
+    background: #ff4757; color: white; border: none; padding: 16px 40px; font-size: 20px; border-radius: 30px;
+    cursor: pointer; transition: transform 0.1s; font-weight: bold;
+  }
+  #roll-btn:active { transform: scale(0.95); }
+  #roll-btn:disabled { background: #666; cursor: not-allowed; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+  }
+}
+</script>
 </head>
 <body>
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Game of Fate v0.8</em><br><br>
+  <em>The Circle of Destiny v0.8</em><br><br>
   Drag to orbit • Scroll to zoom<br>
-  Click Stonehenge → roll the dice<br>
+  Click Stonehenge → roll the Dice of Fate<br>
   Click chest/fruit → play<br>
   ♪ bubble = toggle player<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
@@ -46,15 +74,23 @@
 
 <div id="player-bubble">♪</div>
 
-<div id="game-panel">
-  <div class="close-btn">×</div>
-  <h3>Roll the Dice of Fate</h3>
-  <div id="dice-container">🎲 🎲</div>
-  <div id="dice-result" style="font-size:24px; margin:20px 0;"></div>
-  <button id="roll-btn">Roll</button>
+<!-- Dice Game Modal -->
+<div id="dice-modal">
+  <div class="modal-content">
+    <div class="close-btn">×</div>
+    <div id="canvas-container"></div>
+    <div class="ui-panel">
+      <div id="result-display">Result: <span id="score-text">-</span></div>
+      <button id="roll-btn">ROLL DICE</button>
+    </div>
+  </div>
 </div>
 
-<script>
+<script type="module">
+  import * as THREE from 'three';
+  import * as CANNON from 'cannon-es';
+
+  // Main Scene Setup
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x0a1a2f, 0.0008);
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
@@ -80,9 +116,9 @@
   ground.position.y = -1;
   scene.add(ground);
 
-  // CENTRAL STONEHENGE — clickable
+  // Stonehenge (clickable)
   const stonehenge = new THREE.Group();
-  stonehenge.userData = {type: 'stonehenge'};
+  stonehenge.userData.type = 'stonehenge';
   const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
   const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
   left.position.set(-6,6,0);
@@ -97,7 +133,7 @@
   stonehenge.add(aura);
   scene.add(stonehenge);
 
-  // ORBIT CONTROLS
+  // Orbit Controls
   let radius = 70;
   let theta = 0;
   let phi = Math.PI / 3.5;
@@ -106,7 +142,6 @@
   let gameMode = false;
   let targetRadius = 70;
   let targetPhi = Math.PI / 3.5;
-  let targetTheta = 0;
 
   const updateCamera = () => {
     camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
@@ -116,10 +151,7 @@
   };
   updateCamera();
 
-  renderer.domElement.addEventListener('pointerdown', e => {
-    isDragging = true;
-    previousMouse = { x: e.clientX, y: e.clientY };
-  });
+  renderer.domElement.addEventListener('pointerdown', e => isDragging = true);
   renderer.domElement.addEventListener('pointermove', e => {
     if (isDragging && !gameMode) {
       const deltaX = e.clientX - previousMouse.x;
@@ -138,18 +170,7 @@
     updateCamera();
   });
 
-  // FRUIT SHAPES AND COLORS
-  const fruitShapes = [
-    new THREE.SphereGeometry(0.6, 8, 6),
-    new THREE.SphereGeometry(0.7, 10, 8),
-    new THREE.ConeGeometry(0.5, 1.2, 8),
-    new THREE.ConeGeometry(0.4, 1.4, 8),
-    new THREE.BoxGeometry(0.7, 1.1, 0.7),
-    new THREE.TorusGeometry(0.4, 0.15, 6, 12)
-  ];
-  const fruitColors = [0xff3366, 0x33ff99, 0xffaa00, 0xcc33ff, 0xffff33, 0x33ccff, 0xff6666, 0x66ff33, 0xff33cc, 0x33ff66, 0x66ccff, 0xccff33];
-
-  // ALBUMS
+  // Albums
   const albums = [
     {playlist: "https://soundcloud.com/musique_residentielle/sets/wisdom-box", tracks: ["https://soundcloud.com/musique_residentielle/wb_01","https://soundcloud.com/musique_residentielle/wb_02","https://soundcloud.com/musique_residentielle/wb_03","https://soundcloud.com/musique_residentielle/wb_04","https://soundcloud.com/musique_residentielle/wb_05","https://soundcloud.com/musique_residentielle/wb_06","https://soundcloud.com/musique_residentielle/wb_07","https://soundcloud.com/musique_residentielle/wb_08","https://soundcloud.com/musique_residentielle/wb_09","https://soundcloud.com/musique_residentielle/wb_10","https://soundcloud.com/musique_residentielle/wb_11","https://soundcloud.com/musique_residentielle/wb_12"], title: "Wisdom Box", art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg"},
     {playlist: "https://soundcloud.com/musique_residentielle/sets/energy-box", tracks: ["https://soundcloud.com/musique_residentielle/eb_01","https://soundcloud.com/musique_residentielle/eb_02","https://soundcloud.com/musique_residentielle/eb_03","https://soundcloud.com/musique_residentielle/eb_04","https://soundcloud.com/musique_residentielle/eb_05","https://soundcloud.com/musique_residentielle/eb_06","https://soundcloud.com/musique_residentielle/eb_07","https://soundcloud.com/musique_residentielle/eb_08","https://soundcloud.com/musique_residentielle/eb_09","https://soundcloud.com/musique_residentielle/eb_10","https://soundcloud.com/musique_residentielle/eb_11","https://soundcloud.com/musique_residentielle/eb_12"], title: "Energy Box", art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg"},
@@ -162,7 +183,6 @@
   ];
 
   const radiusCircle = 34;
-  const trees = [];
   const fruits = [];
 
   albums.forEach((album,i)=>{
@@ -170,7 +190,7 @@
     const x = Math.cos(angle)*radiusCircle;
     const z = Math.sin(angle)*radiusCircle;
 
-    // TREE
+    // Tree
     const tree = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.6,2.2,17,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
     trunk.position.y = 8.5;
@@ -179,9 +199,8 @@
     tree.add(trunk,leaves);
     tree.position.set(x,0,z);
     scene.add(tree);
-    trees.push(tree);
 
-    // 12 FRUITS
+    // 12 Fruits
     for(let f=0; f<12; f++){
       const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
       const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
@@ -192,12 +211,12 @@
       fruit.position.set(r * Math.sin(phiF) * Math.cos(thetaF), 17 + (Math.cos(phiF) * r), r * Math.sin(phiF) * Math.sin(thetaF));
       fruit.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
       fruit.scale.setScalar(0.5 + Math.random()*0.3);
-      fruit.userData = {type:'fruit', url: album.tracks[f], treeIndex: i, fruitIndex: f};
+      fruit.userData = {type:'fruit', url: album.tracks[f], albumIndex: i, trackIndex: f};
       tree.add(fruit);
       fruits.push(fruit);
     }
 
-    // CHEST
+    // Chest
     const chestX = x - Math.cos(angle)*5;
     const chestZ = z - Math.sin(angle)*5;
     const chest = new THREE.Group();
@@ -250,7 +269,7 @@
     const hits = raycaster.intersectObjects(scene.children,true);
     let found = null;
     for(let h of hits){
-      if(h.object.parent && h.object.parent.userData && h.object.parent.userData.type === 'stonehenge'){
+      if(h.object.parent?.userData?.type === 'stonehenge'){
         tooltip.textContent = 'Click to roll the Dice of Fate';
         tooltip.style.opacity = 1;
         break;
@@ -271,39 +290,30 @@
         tooltip.style.left = (e.clientX+15)+'px';
         tooltip.style.top = (e.clientY+15)+'px';
         tooltip.style.opacity = 1;
-      } else if (!hovered || hovered.userData.type !== 'stonehenge') tooltip.style.opacity = 0;
+      } else if (!hovered) tooltip.style.opacity = 0;
     }
   });
 
-  // PLAYER BUBBLE + LAST PLAYED
+  // Player
   let lastUrl = '';
   let lastTitle = '';
   let lastArt = '';
-  let lastType = '';
-  let widget = null;
 
   const playerBubble = document.getElementById('player-bubble');
   playerBubble.onclick = () => {
     const panel = document.getElementById('album-panel');
-    if (panel.style.display === 'block') {
-      panel.style.display = 'none';
-    } else {
-      panel.style.display = 'block';
-    }
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
   };
 
-  function loadTrack(url, title, art, type) {
+  function loadTrack(url, title, art) {
     lastUrl = url;
     lastTitle = title;
     lastArt = art;
-    lastType = type;
     document.getElementById('album-title').textContent = title;
     document.getElementById('album-art').src = art;
-    document.getElementById('player-container').innerHTML = `<iframe id="sc-widget" width="100%" height="${type === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
+    document.getElementById('player-container').innerHTML = `<iframe width="100%" height="450" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
     document.getElementById('album-panel').style.display = 'block';
     playerBubble.style.display = 'block';
-    const iframe = document.getElementById('sc-widget');
-    widget = SC.Widget(iframe);
   }
 
   window.addEventListener('click',()=>{ if(hovered){
@@ -311,62 +321,164 @@
       gameMode = true;
       targetRadius = 25;
       targetPhi = Math.PI / 4;
-      document.getElementById('game-panel').style.display = 'block';
+      document.getElementById('dice-modal').classList.add('active');
     } else {
       const type = hovered.userData.type;
       const url = hovered.userData.url || hovered.userData.album.playlist;
       const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
       const art = hovered.userData.album?.art || '';
-      loadTrack(url, title, art, type);
+      loadTrack(url, title, art);
     }
   }});
 
   document.querySelectorAll('.close-btn').forEach(btn => btn.onclick = () => {
     document.getElementById('album-panel').style.display = 'none';
-    document.getElementById('game-panel').style.display = 'none';
+    document.getElementById('dice-modal').classList.remove('active');
     gameMode = false;
     targetRadius = 70;
     targetPhi = Math.PI / 3.5;
   });
 
-  // Dice Game
-  document.getElementById('roll-btn').onclick = () => {
-    const d8 = Math.floor(Math.random() * 8); // 0-7
-    const d12 = Math.floor(Math.random() * 12); // 0-11
-    document.getElementById('dice-result').textContent = `d8: ${d8 + 1} → ${albums[d8].title}\nd12: ${d12 + 1} → Track ${d12 + 1}`;
-    document.getElementById('dice-container').textContent = '🎲 ' + (d8 + 1) + ' + ' + (d12 + 1) + ' 🎲';
+  // Dice Game (Gemini's code integrated)
+  const diceModal = document.getElementById('dice-modal');
+  const diceContainer = document.getElementById('canvas-container');
+  const rollBtn = document.getElementById('roll-btn');
+  const scoreText = document.getElementById('score-text');
 
-    // Highlight the fruit
-    fruits.forEach(f => {
-      if(f.userData.treeIndex === d8 && f.userData.fruitIndex === d12){
-        f.scale.setScalar(2);
-        setTimeout(() => f.scale.setScalar(1), 2000);
-        loadTrack(f.userData.url, 'Track from ' + albums[d8].title, albums[d8].art, 'fruit');
-      }
+  const diceScene = new THREE.Scene();
+  const diceCamera = new THREE.PerspectiveCamera(45, diceContainer.clientWidth / diceContainer.clientHeight, 0.1, 100);
+  diceCamera.position.set(0, 15, 10);
+  diceCamera.lookAt(0, 0, 0);
+
+  const diceRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  diceRenderer.setSize(diceContainer.clientWidth, diceContainer.clientHeight);
+  diceRenderer.shadowMap.enabled = true;
+  diceContainer.appendChild(diceRenderer.domElement);
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+  diceScene.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+  dirLight.position.set(5, 20, 10);
+  dirLight.castShadow = true;
+  diceScene.add(dirLight);
+
+  const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -39.24, 0) });
+  const floorMaterial = new CANNON.Material('floor');
+  const diceMaterial = new CANNON.Material('dice');
+  world.addContactMaterial(new CANNON.ContactMaterial(floorMaterial, diceMaterial, { friction: 0.1, restitution: 0.5 }));
+
+  const floorBody = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: floorMaterial });
+  floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+  world.addBody(floorBody);
+
+  const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), new THREE.ShadowMaterial({ opacity: 0.3 }));
+  floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.receiveShadow = true;
+  diceScene.add(floorMesh);
+
+  const diceObjects = [];
+  function createDice(type, position, color) {
+    let geometry = type === 'd8' ? new THREE.OctahedronGeometry(1) : new THREE.DodecahedronGeometry(1);
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.2, metalness: 0.1, flatShading: true });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+    diceScene.add(mesh);
+
+    const shape = type === 'd8' ? new CANNON.Box(new CANNON.Vec3(1,1,1)) : new CANNON.Box(new CANNON.Vec3(1,1,1)); // Approximation for rolling
+    const body = new CANNON.Body({ mass: 1, shape, position: new CANNON.Vec3(...position), material: diceMaterial });
+    world.addBody(body);
+
+    return { mesh, body, type, faces: type === 'd8' ? 8 : 12 };
+  }
+
+  const d8 = createDice('d8', [-2, 5, 0], 0xff4757);
+  const d12 = createDice('d12', [2, 5, 0], 0x1e90ff);
+  diceObjects.push(d8, d12);
+
+  let isRolling = false;
+
+  function rollDice() {
+    if(isRolling) return;
+    isRolling = true;
+    rollBtn.disabled = true;
+    scoreText.innerText = "...";
+
+    diceObjects.forEach(d => {
+      d.body.position.set(d.type === 'd8' ? -2 : 2, 5, 0);
+      d.body.velocity.set(0, 0, 0);
+      d.body.angularVelocity.set(0, 0, 0);
+
+      const force = 60 + Math.random() * 30;
+      const randX = (Math.random() - 0.5) * 10;
+      const randZ = (Math.random() - 0.5) * 10;
+      d.body.applyImpulse(new CANNON.Vec3(randX, force, randZ), new CANNON.Vec3(0, 0, 0));
+      d.body.angularVelocity.set(Math.random() * 30 - 15, Math.random() * 30 - 15, Math.random() * 30 - 15);
     });
-  };
+  }
 
-  // Animation
+  function checkStopped() {
+    if (!isRolling) return;
+    let allStopped = true;
+    diceObjects.forEach(d => {
+      if (d.body.velocity.length() > 0.1 || d.body.angularVelocity.length() > 0.1) allStopped = false;
+    });
+    if (allStopped) {
+      setTimeout(() => {
+        const d8Result = Math.floor(Math.random() * 8); // 0-7
+        const d12Result = Math.floor(Math.random() * 12); // 0-11
+        scoreText.innerText = `${albums[d8Result].title} — Track ${d12Result + 1}`;
+        loadTrack(albums[d8Result].tracks[d12Result], `Fate chose: ${albums[d8Result].title} Track ${d12Result + 1}`, albums[d8Result].art);
+        isRolling = false;
+        rollBtn.disabled = false;
+      }, 300);
+    }
+  }
+
+  rollBtn.addEventListener('click', rollDice);
+
+  const diceClock = new THREE.Clock();
+  function diceAnimate() {
+    requestAnimationFrame(diceAnimate);
+    if (diceModal.classList.contains('active')) {
+      world.step(1/60);
+      diceObjects.forEach(d => {
+        d.mesh.position.copy(d.body.position);
+        d.mesh.quaternion.copy(d.body.quaternion);
+      });
+      checkStopped();
+      diceRenderer.render(diceScene, diceCamera);
+    }
+  }
+  diceAnimate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+    if (diceModal.classList.contains('active')) {
+      diceCamera.aspect = diceContainer.clientWidth / diceContainer.clientHeight;
+      diceCamera.updateProjectionMatrix();
+      diceRenderer.setSize(diceContainer.clientWidth, diceContainer.clientHeight);
+    }
+  });
+
+  // Main Animation
   const clock = new THREE.Clock();
-  function animate(){
+  function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    // Smooth camera transition
     radius += (targetRadius - radius) * 0.05;
     phi += (targetPhi - phi) * 0.05;
     updateCamera();
 
-    // Gentle pulse
-    const pulse = 1 + Math.sin(t*1.2)*0.04;
+    const pulse = 1 + Math.sin(t * 1.2) * 0.04;
     stonehenge.scale.setScalar(pulse);
-    aura.material.opacity = 0.2 + Math.sin(t*1.5)*0.1;
+    aura.material.opacity = 0.2 + Math.sin(t * 1.5) * 0.1;
 
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
   }
   animate();
-
-  window.addEventListener('resize',()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 </script>
 </body>
 </html>
