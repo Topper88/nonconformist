@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.1</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -223,12 +223,12 @@
   const scoreText = document.getElementById('score-text');
 
   const diceScene = new THREE.Scene();
-  const diceCamera = new THREE.PerspectiveCamera(45, diceContainer.clientWidth / diceContainer.clientHeight, 0.1, 100);
+  const diceCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   diceCamera.position.set(0, 15, 10);
   diceCamera.lookAt(0, 0, 0);
 
   const diceRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  diceRenderer.setSize(diceContainer.clientWidth, diceContainer.clientHeight);
+  diceRenderer.setPixelRatio(devicePixelRatio);
   diceRenderer.shadowMap.enabled = true;
   diceContainer.appendChild(diceRenderer.domElement);
 
@@ -261,7 +261,7 @@
     mesh.castShadow = true;
     diceScene.add(mesh);
 
-    const shape = new CANNON.Box(new CANNON.Vec3(1,1,1)); // Simple box approximation for stable rolling
+    const shape = new CANNON.Box(new CANNON.Vec3(1,1,1));
     const body = new CANNON.Body({ mass: 1, shape, position: new CANNON.Vec3(...position), material: diceMaterial });
     world.addBody(body);
 
@@ -328,23 +328,16 @@
   }
   diceAnimate();
 
-  // Main Animation
-  const clock = new THREE.Clock();
-  function animate() {
-    requestAnimationFrame(animate);
-    const t = clock.getElapsedTime();
-
-    radius += (targetRadius - radius) * 0.05;
-    phi += (targetPhi - phi) * 0.05;
-    updateCamera();
-
-    const pulse = 1 + Math.sin(t * 1.2) * 0.04;
-    stonehenge.scale.setScalar(pulse);
-    aura.material.opacity = 0.2 + Math.sin(t * 1.5) * 0.1;
-
-    renderer.render(scene, camera);
+  // Resize handler for dice canvas
+  function resizeDiceCanvas() {
+    if (diceModal.classList.contains('active')) {
+      const width = diceContainer.clientWidth;
+      const height = diceContainer.clientHeight;
+      diceCamera.aspect = width / height;
+      diceCamera.updateProjectionMatrix();
+      diceRenderer.setSize(width, height);
+    }
   }
-  animate();
 
   // Interaction
   const raycaster = new THREE.Raycaster();
@@ -412,6 +405,7 @@
       targetRadius = 25;
       targetPhi = Math.PI / 4;
       diceModal.classList.add('active');
+      setTimeout(resizeDiceCanvas, 100); // Fix black screen
     } else {
       const type = hovered.userData.type;
       const url = hovered.userData.url || hovered.userData.album.playlist;
@@ -433,12 +427,26 @@
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
-    if (diceModal.classList.contains('active')) {
-      diceCamera.aspect = diceContainer.clientWidth / diceContainer.clientHeight;
-      diceCamera.updateProjectionMatrix();
-      diceRenderer.setSize(diceContainer.clientWidth, diceContainer.clientHeight);
-    }
+    resizeDiceCanvas();
   });
+
+  // Main Animation
+  const clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    radius += (targetRadius - radius) * 0.05;
+    phi += (targetPhi - phi) * 0.05;
+    updateCamera();
+
+    const pulse = 1 + Math.sin(t * 1.2) * 0.04;
+    stonehenge.scale.setScalar(pulse);
+    aura.material.opacity = 0.2 + Math.sin(t * 1.5) * 0.1;
+
+    renderer.render(scene, camera);
+  }
+  animate();
 </script>
 </body>
 </html>
