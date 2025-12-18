@@ -2,24 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Game of Fate v0.7.3</title>
+<title>п o п c o п f o r m i s t | The Game of Fate v0.8</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
   #info { position:absolute; top:20px; left:20px; color:#ddd; background:rgba(0,0,0,0.6); padding:15px; border-radius:12px; max-width:340px; backdrop-filter:blur(10px); z-index:10; border:1px solid #334; }
   #info a { color:#8cf; }
-  .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity=0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
-  .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.98); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
+  .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
+  .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.5); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
   .close-btn { position:absolute; top:12px; right:16px; font-size:28px; cursor:pointer; color:#aaa; }
   .close-btn:hover { color:#fff; }
   #cc { position:absolute; bottom:20px; right:20px; color:#666; font-size:11px; z-index:10; }
   #cc a { color:#8cf; text-decoration:none; }
   #player-bubble { position:absolute; bottom:30px; right:30px; width:60px; height:60px; background:rgba(100,180,255,0.7); border-radius:50%; cursor:pointer; z-index:150; text-align:center; line-height:60px; font-size:32px; color:#fff; backdrop-filter:blur(10px); border:2px solid #88ccff; box-shadow:0 0 20px rgba(100,180,255,0.6); display:none; transition:transform 0.2s; }
   #player-bubble:hover { background:rgba(100,180,255,0.9); transform:scale(1.1); }
-  #game-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.98); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; text-align:center; }
-  #game-panel h3 { margin-bottom:20px; }
-  #dice-result { font-size:24px; margin:20px 0; }
-  #roll-btn { background:#5ab; color:#fff; border:none; padding:14px; border-radius:10px; cursor:pointer; font-weight:bold; width:100%; font-size:16px; }
+  #game-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.95); color:#fff; padding:40px; border-radius:20px; width:420px; box-shadow:0 0 80px rgba(100,180,255,0.8); display:none; z-index:200; backdrop-filter:blur(16px); border:2px solid #88ccff; text-align:center; }
+  #dice-container { font-size:80px; margin:30px 0; }
+  #roll-btn { background:#5ab; color:#fff; border:none; padding:16px 32px; border-radius:12px; cursor:pointer; font-weight:bold; font-size:18px; }
   #roll-btn:hover { background:#6bc; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
@@ -28,10 +27,11 @@
 
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Game of Fate v0.7.3</em><br><br>
-  Drag to orbit • Scroll to zoom • Click chest/fruit → play<br>
-  Click Stonehenge → roll dice game<br>
-  ♪ bubble = toggle player • Bass pulses the world<br>
+  <em>The Game of Fate v0.8</em><br><br>
+  Drag to orbit • Scroll to zoom<br>
+  Click Stonehenge → roll the dice<br>
+  Click chest/fruit → play<br>
+  ♪ bubble = toggle player<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -46,10 +46,11 @@
 
 <div id="player-bubble">♪</div>
 
-<div id="game-panel" class="album-panel">
+<div id="game-panel">
   <div class="close-btn">×</div>
   <h3>Roll the Dice of Fate</h3>
-  <div id="dice-result"></div>
+  <div id="dice-container">🎲 🎲</div>
+  <div id="dice-result" style="font-size:24px; margin:20px 0;"></div>
   <button id="roll-btn">Roll</button>
 </div>
 
@@ -79,8 +80,9 @@
   ground.position.y = -1;
   scene.add(ground);
 
-  // CENTRAL STONEHENGE
+  // CENTRAL STONEHENGE — clickable
   const stonehenge = new THREE.Group();
+  stonehenge.userData = {type: 'stonehenge'};
   const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
   const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
   left.position.set(-6,6,0);
@@ -101,6 +103,10 @@
   let phi = Math.PI / 3.5;
   let isDragging = false;
   let previousMouse = { x: 0, y: 0 };
+  let gameMode = false;
+  let targetRadius = 70;
+  let targetPhi = Math.PI / 3.5;
+  let targetTheta = 0;
 
   const updateCamera = () => {
     camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
@@ -115,7 +121,7 @@
     previousMouse = { x: e.clientX, y: e.clientY };
   });
   renderer.domElement.addEventListener('pointermove', e => {
-    if (isDragging) {
+    if (isDragging && !gameMode) {
       const deltaX = e.clientX - previousMouse.x;
       const deltaY = e.clientY - previousMouse.y;
       theta -= deltaX * 0.005;
@@ -143,7 +149,7 @@
   ];
   const fruitColors = [0xff3366, 0x33ff99, 0xffaa00, 0xcc33ff, 0xffff33, 0x33ccff, 0xff6666, 0x66ff33, 0xff33cc, 0x33ff66, 0x66ccff, 0xccff33];
 
-  // ALBUMS WITH PLAYLISTS AND TRACKS
+  // ALBUMS
   const albums = [
     {playlist: "https://soundcloud.com/musique_residentielle/sets/wisdom-box", tracks: ["https://soundcloud.com/musique_residentielle/wb_01","https://soundcloud.com/musique_residentielle/wb_02","https://soundcloud.com/musique_residentielle/wb_03","https://soundcloud.com/musique_residentielle/wb_04","https://soundcloud.com/musique_residentielle/wb_05","https://soundcloud.com/musique_residentielle/wb_06","https://soundcloud.com/musique_residentielle/wb_07","https://soundcloud.com/musique_residentielle/wb_08","https://soundcloud.com/musique_residentielle/wb_09","https://soundcloud.com/musique_residentielle/wb_10","https://soundcloud.com/musique_residentielle/wb_11","https://soundcloud.com/musique_residentielle/wb_12"], title: "Wisdom Box", art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg"},
     {playlist: "https://soundcloud.com/musique_residentielle/sets/energy-box", tracks: ["https://soundcloud.com/musique_residentielle/eb_01","https://soundcloud.com/musique_residentielle/eb_02","https://soundcloud.com/musique_residentielle/eb_03","https://soundcloud.com/musique_residentielle/eb_04","https://soundcloud.com/musique_residentielle/eb_05","https://soundcloud.com/musique_residentielle/eb_06","https://soundcloud.com/musique_residentielle/eb_07","https://soundcloud.com/musique_residentielle/eb_08","https://soundcloud.com/musique_residentielle/eb_09","https://soundcloud.com/musique_residentielle/eb_10","https://soundcloud.com/musique_residentielle/eb_11","https://soundcloud.com/musique_residentielle/eb_12"], title: "Energy Box", art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg"},
@@ -156,6 +162,9 @@
   ];
 
   const radiusCircle = 34;
+  const trees = [];
+  const fruits = [];
+
   albums.forEach((album,i)=>{
     const angle = (i/albums.length)*Math.PI*2;
     const x = Math.cos(angle)*radiusCircle;
@@ -168,8 +177,11 @@
     const leaves = new THREE.Mesh(new THREE.SphereGeometry(7.5,10,8), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
     leaves.position.y = 17;
     tree.add(trunk,leaves);
+    tree.position.set(x,0,z);
+    scene.add(tree);
+    trees.push(tree);
 
-    // 12 FRUITS on canopy surface — each with track link
+    // 12 FRUITS
     for(let f=0; f<12; f++){
       const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
       const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
@@ -180,14 +192,12 @@
       fruit.position.set(r * Math.sin(phiF) * Math.cos(thetaF), 17 + (Math.cos(phiF) * r), r * Math.sin(phiF) * Math.sin(thetaF));
       fruit.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
       fruit.scale.setScalar(0.5 + Math.random()*0.3);
-      fruit.userData = {type:'fruit', url: album.tracks[f]};
+      fruit.userData = {type:'fruit', url: album.tracks[f], treeIndex: i, fruitIndex: f};
       tree.add(fruit);
+      fruits.push(fruit);
     }
 
-    tree.position.set(x,0,z);
-    scene.add(tree);
-
-    // CHEST IN FRONT — linked to playlist
+    // CHEST
     const chestX = x - Math.cos(angle)*5;
     const chestZ = z - Math.sin(angle)*5;
     const chest = new THREE.Group();
@@ -240,6 +250,11 @@
     const hits = raycaster.intersectObjects(scene.children,true);
     let found = null;
     for(let h of hits){
+      if(h.object.parent && h.object.parent.userData && h.object.parent.userData.type === 'stonehenge'){
+        tooltip.textContent = 'Click to roll the Dice of Fate';
+        tooltip.style.opacity = 1;
+        break;
+      }
       if(h.object.userData && h.object.userData.type==='fruit'){
         found = h.object; break;
       }
@@ -250,13 +265,13 @@
     if(found!==hovered){
       if(hovered) hovered.scale.set(1,1,1);
       hovered = found;
-      if(hovered){
+      if(hovered && hovered.userData.type !== 'stonehenge'){
         hovered.scale.set(1.15,1.15,1.15);
-        tooltip.textContent = hovered.userData.type === 'fruit' ? 'Click for track' : 'Click for playlist';
+        tooltip.textContent = hovered.userData.type === 'fruit' ? hovered.userData.album.title + ' Track' : hovered.userData.album.title;
         tooltip.style.left = (e.clientX+15)+'px';
         tooltip.style.top = (e.clientY+15)+'px';
         tooltip.style.opacity = 1;
-      } else tooltip.style.opacity = 0;
+      } else if (!hovered || hovered.userData.type !== 'stonehenge') tooltip.style.opacity = 0;
     }
   });
 
@@ -266,24 +281,18 @@
   let lastArt = '';
   let lastType = '';
   let widget = null;
-  let audioContext = null;
-  let analyser = null;
-  let dataArray = null;
-  const clientId = 'iZIs9mchVcX5nlL1qIcVJa8LWkA14ovh'; // Public SoundCloud client ID
 
   const playerBubble = document.getElementById('player-bubble');
   playerBubble.onclick = () => {
     const panel = document.getElementById('album-panel');
     if (panel.style.display === 'block') {
       panel.style.display = 'none';
-      // Music continues
     } else {
       panel.style.display = 'block';
-      // Music continues
     }
   };
 
-  async function loadTrack(url, title, art, type) {
+  function loadTrack(url, title, art, type) {
     lastUrl = url;
     lastTitle = title;
     lastArt = art;
@@ -293,74 +302,65 @@
     document.getElementById('player-container').innerHTML = `<iframe id="sc-widget" width="100%" height="${type === 'fruit' ? '166' : '450'}" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
     document.getElementById('album-panel').style.display = 'block';
     playerBubble.style.display = 'block';
-
-    // SC.Widget
     const iframe = document.getElementById('sc-widget');
     widget = SC.Widget(iframe);
-
-    // Web Audio
-    if (!audioContext) {
-      audioContext = new AudioContext();
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
-    }
-
-    // Get stream URL
-    const resolveUrl = `https://api.soundcloud.com/resolve?url=${url}&client_id=${clientId}`;
-    const resolveResponse = await fetch(resolveUrl);
-    const resolveJson = await resolveResponse.json();
-    let trackId = resolveJson.id;
-    if (resolveJson.kind === 'playlist') {
-      trackId = resolveJson.tracks[0].id; // First track for analysis
-    }
-    const streamUrl = `https://api.soundcloud.com/tracks/${trackId}/stream?client_id=${clientId}`;
-
-    const hiddenAudio = document.getElementById('hidden-audio');
-    hiddenAudio.src = streamUrl;
-    hiddenAudio.play().catch(e => console.log('Audio play error', e));
-    const source = audioContext.createMediaElementSource(hiddenAudio);
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
   }
 
   window.addEventListener('click',()=>{ if(hovered){
-    const type = hovered.userData.type;
-    const url = hovered.userData.url || hovered.userData.album.playlist;
-    const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
-    const art = hovered.userData.album?.art || '';
-    loadTrack(url, title, art, type);
+    if(hovered.userData.type === 'stonehenge'){
+      gameMode = true;
+      targetRadius = 25;
+      targetPhi = Math.PI / 4;
+      document.getElementById('game-panel').style.display = 'block';
+    } else {
+      const type = hovered.userData.type;
+      const url = hovered.userData.url || hovered.userData.album.playlist;
+      const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
+      const art = hovered.userData.album?.art || '';
+      loadTrack(url, title, art, type);
+    }
   }});
 
-  document.querySelector('.close-btn').onclick = () => {
+  document.querySelectorAll('.close-btn').forEach(btn => btn.onclick = () => {
     document.getElementById('album-panel').style.display = 'none';
-    // Music continues
+    document.getElementById('game-panel').style.display = 'none';
+    gameMode = false;
+    targetRadius = 70;
+    targetPhi = Math.PI / 3.5;
+  });
+
+  // Dice Game
+  document.getElementById('roll-btn').onclick = () => {
+    const d8 = Math.floor(Math.random() * 8); // 0-7
+    const d12 = Math.floor(Math.random() * 12); // 0-11
+    document.getElementById('dice-result').textContent = `d8: ${d8 + 1} → ${albums[d8].title}\nd12: ${d12 + 1} → Track ${d12 + 1}`;
+    document.getElementById('dice-container').textContent = '🎲 ' + (d8 + 1) + ' + ' + (d12 + 1) + ' 🎲';
+
+    // Highlight the fruit
+    fruits.forEach(f => {
+      if(f.userData.treeIndex === d8 && f.userData.fruitIndex === d12){
+        f.scale.setScalar(2);
+        setTimeout(() => f.scale.setScalar(1), 2000);
+        loadTrack(f.userData.url, 'Track from ' + albums[d8].title, albums[d8].art, 'fruit');
+      }
+    });
   };
 
-  // Animation + Real Bass Pulse (tuned gentler)
+  // Animation
   const clock = new THREE.Clock();
   function animate(){
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    let bass = 0;
-    if (analyser) {
-      analyser.getByteFrequencyData(dataArray);
-      bass = dataArray.slice(0, 8).reduce((a,b) => a+b, 0) / 8 / 255 * 0.3; // Gentler
-    } else {
-      bass = Math.sin(t * 3) * 0.15 + 0.15;
-    }
+    // Smooth camera transition
+    radius += (targetRadius - radius) * 0.05;
+    phi += (targetPhi - phi) * 0.05;
+    updateCamera();
 
-    stonehenge.scale.setScalar(1 + bass * 0.1); // Gentle
-    aura.material.opacity = 0.2 + bass * 0.3;
-    aura.material.color.setHSL(0.6, 1, 0.5 + bass * 0.15);
-
-    scene.traverse(obj => {
-      if (obj.userData && obj.userData.type === 'fruit') {
-        obj.scale.setScalar(1 + bass * 0.2); // Gentler
-        obj.material.emissiveIntensity = 0.6 + bass * 0.6;
-      }
-    });
+    // Gentle pulse
+    const pulse = 1 + Math.sin(t*1.2)*0.04;
+    stonehenge.scale.setScalar(pulse);
+    aura.material.opacity = 0.2 + Math.sin(t*1.5)*0.1;
 
     renderer.render(scene,camera);
   }
