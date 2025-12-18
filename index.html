@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.4</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -10,7 +10,7 @@
   #info a { color:#8cf; }
   .tooltip { position:absolute; background:rgba(20,20,40,0.95); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .3s; z-index:100; backdrop-filter:blur(12px); border:1px solid #556; }
   .album-panel { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,35,0.5); color:#fff; padding:30px; border-radius:20px; width:380px; box-shadow:0 0 60px rgba(100,180,255,0.5); display:none; z-index:200; backdrop-filter:blur(16px); border:1px solid #667; }
-  .close-btn { position:absolute; top:12px; right:16px; font-size:28px; cursor:pointer; color:#aaa; }
+  .close-btn { position:absolute; top:12px; right:16px; font-size:28px; cursor:pointer; color:#aaa; z-index:300; }
   .close-btn:hover { color:#fff; }
   #cc { position:absolute; bottom:20px; right:20px; color:#666; font-size:11px; z-index:10; }
   #cc a { color:#8cf; text-decoration:none; }
@@ -71,13 +71,13 @@
     ground.position.y = -1;
     scene.add(ground);
 
-    // Stonehenge — now properly clickable
+    // Stonehenge
     const stonehenge = new THREE.Group();
     stonehenge.userData.type = 'stonehenge';
     const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
     const left = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
     left.position.set(-6,6,0);
-    left.userData.type = 'stonehenge'; // inherit for detection
+    left.userData.type = 'stonehenge';
     const right = new THREE.Mesh(new THREE.BoxGeometry(3,12,3), stoneMat);
     right.position.set(6,6,0);
     right.userData.type = 'stonehenge';
@@ -151,7 +151,7 @@
       {playlist: "https://soundcloud.com/musique_residentielle/sets/bonus-box", tracks: ["https://soundcloud.com/musique_residentielle/bb_01","https://soundcloud.com/musique_residentielle/bb_02","https://soundcloud.com/musique_residentielle/bb_03","https://soundcloud.com/musique_residentielle/bb_04","https://soundcloud.com/musique_residentielle/bb_05","https://soundcloud.com/musique_residentielle/bb_06","https://soundcloud.com/musique_residentielle/bb_07","https://soundcloud.com/musique_residentielle/bb_08","https://soundcloud.com/musique_residentielle/bb_09","https://soundcloud.com/musique_residentielle/bb_10","https://soundcloud.com/musique_residentielle/bb_11","https://soundcloud.com/musique_residentielle/bb_12"], title: "Bonus Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg"}
     ];
 
-    // Build Trees, Fruits, Chests (same as before)
+    // Build Trees, Fruits, Chests
     const radiusCircle = 34;
     albums.forEach((album,i)=>{
       const angle = (i/albums.length)*Math.PI*2;
@@ -220,7 +220,7 @@
       scene.add(tree);
     }
 
-    // Dice Modal Setup
+    // Dice Modal
     const diceModal = document.getElementById('dice-modal');
     const diceContainer = document.getElementById('canvas-container');
     const rollBtn = document.getElementById('roll-btn');
@@ -317,7 +317,6 @@
 
     rollBtn.addEventListener('click', rollDice);
 
-    const diceClock = new THREE.Clock();
     function diceAnimate() {
       requestAnimationFrame(diceAnimate);
       if (diceModal.classList.contains('active')) {
@@ -342,7 +341,7 @@
       }
     }
 
-    // Interaction — FIXED Stonehenge detection
+    // Interaction
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -420,12 +419,16 @@
       }
     }});
 
-    document.querySelectorAll('.close-btn').forEach(btn => btn.onclick = () => {
-      document.getElementById('album-panel').style.display = 'none';
-      diceModal.classList.remove('active');
-      gameMode = false;
-      targetRadius = 70;
-      targetPhi = Math.PI / 3.5;
+    // Close buttons — FIXED for dice modal
+    document.querySelectorAll('.close-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('album-panel').style.display = 'none';
+        diceModal.classList.remove('active');
+        gameMode = false;
+        targetRadius = 70;
+        targetPhi = Math.PI / 3.5;
+      };
     });
 
     window.addEventListener('resize', () => {
@@ -458,7 +461,7 @@
 <body>
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Destiny v0.8.4</em><br><br>
+  <em>The Circle of Destiny v0.8.5</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click Stonehenge → roll the Dice of Fate<br>
   Click chest/fruit → play<br>
