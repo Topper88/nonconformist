@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Destiny v0.9</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v1.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -32,7 +32,8 @@
   .ui-panel {
     height: 100px; background: #1a2a44; display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
   }
-  #result-display { font-size: 28px; font-weight: bold; color: #88ccff; }
+  #result-display { font-size: 24px; font-weight: bold; color: #88ccff; cursor:pointer; }
+  #result-display span { text-decoration:underline; }
   #roll-btn {
     background: #ff4757; color: white; border: none; padding: 16px 40px; font-size: 20px; border-radius: 30px;
     cursor: pointer; transition: transform 0.1s; font-weight: bold;
@@ -239,7 +240,7 @@
     const diceModal = document.getElementById('dice-modal');
     const diceContainer = document.getElementById('canvas-container');
     const rollBtn = document.getElementById('roll-btn');
-    const scoreText = document.getElementById('score-text');
+    const resultDisplay = document.getElementById('result-display');
 
     const diceScene = new THREE.Scene();
     const diceCamera = new THREE.PerspectiveCamera(45, diceContainer.clientWidth / diceContainer.clientHeight, 0.1, 100);
@@ -267,37 +268,92 @@
     floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     world.addBody(floorBody);
 
+    // Invisible walls to keep dice in view
+    const wallSize = 10;
+    const wallThickness = 0.5;
+    const wallHeight = 5;
+    const wallMat = new CANNON.Material('wall');
+    const walls = [
+      new CANNON.Box(new CANNON.Vec3(wallSize, wallHeight, wallThickness)), // front
+      new CANNON.Box(new CANNON.Vec3(wallSize, wallHeight, wallThickness)), // back
+      new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, wallSize)), // left
+      new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, wallSize))  // right
+    ];
+    walls.forEach((shape, i) => {
+      const body = new CANNON.Body({ type: CANNON.Body.STATIC, shape, material: wallMat });
+      if (i === 0) body.position.set(0, wallHeight/2, wallSize);
+      if (i === 1) body.position.set(0, wallHeight/2, -wallSize);
+      if (i === 2) body.position.set(-wallSize, wallHeight/2, 0);
+      if (i === 3) body.position.set(wallSize, wallHeight/2, 0);
+      world.addBody(body);
+    });
+
     const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), new THREE.ShadowMaterial({ opacity: 0.3 }));
     floorMesh.rotation.x = -Math.PI / 2;
     floorMesh.receiveShadow = true;
     diceScene.add(floorMesh);
 
-    const diceObjects = [];
-    function createDice(type, position, color) {
-      let geometry = type === 'd8' ? new THREE.OctahedronGeometry(1) : new THREE.DodecahedronGeometry(1);
-      const material = new THREE.MeshStandardMaterial({ color, roughness: 0.2, metalness: 0.1, flatShading: true });
+    // Dice with numbers
+    function createNumberedDice(type, position, color) {
+      const geometry = type === 'd8' ? new THREE.OctahedronGeometry(1) : new THREE.DodecahedronGeometry(1);
+      const material = new THREE.MeshStandardMaterial({ color, roughness: 0.2, metalness: 0.1 });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;
       diceScene.add(mesh);
+
+      // Add numbers
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0,0,256,256);
+      ctx.font = 'bold 140px Arial';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const faces = type === 'd8' ? 8 : 12;
+      const loader = new THREE.TextureLoader();
+      const numbers = Array.from({length: faces}, (_, i) => i + 1);
+      numbers.forEach((num, i) => {
+        ctx.clearRect(0,0,256,256);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0,0,256,256);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(num.toString(), 128, 128);
+        const texture = new THREE.CanvasTexture(canvas);
+        const faceMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0.8 });
+        const faceGeo = new THREE.PlaneGeometry(1.4, 1.4);
+        const faceMesh = new THREE.Mesh(faceGeo, faceMat);
+        const normal = geometry.attributes.normal.array.slice(i*9, i*9+3);
+        const normalVec = new THREE.Vector3(normal[0], normal[1], normal[2]).normalize();
+        faceMesh.position.copy(normalVec.clone().multiplyScalar(1.01));
+        faceMesh.lookAt(normalVec.multiplyScalar(2));
+        mesh.add(faceMesh);
+      });
 
       const shape = new CANNON.Box(new CANNON.Vec3(1,1,1));
       const body = new CANNON.Body({ mass: 1, shape, position: new CANNON.Vec3(...position), material: diceMaterial });
       world.addBody(body);
 
-      return { mesh, body, type, faces: type === 'd8' ? 8 : 12 };
+      return { mesh, body, type };
     }
 
-    const d8 = createDice('d8', [-2, 5, 0], 0xff4757);
-    const d12 = createDice('d12', [2, 5, 0], 0x1e90ff);
-    diceObjects.push(d8, d12);
+    const d8 = createNumberedDice('d8', [-2, 5, 0], 0xff4757);
+    const d12 = createNumberedDice('d12', [2, 5, 0], 0x1e90ff);
+    const diceObjects = [d8, d12];
 
     let isRolling = false;
+    let lastChosenUrl = '';
+    let lastChosenTitle = '';
+    let lastChosenArt = '';
 
     function rollDice() {
       if(isRolling) return;
       isRolling = true;
       rollBtn.disabled = true;
-      scoreText.innerText = "...";
+      resultDisplay.innerHTML = 'Rolling...';
 
       diceObjects.forEach(d => {
         d.body.position.set(d.type === 'd8' ? -2 : 2, 5, 0);
@@ -305,8 +361,8 @@
         d.body.angularVelocity.set(0, 0, 0);
 
         const force = 60 + Math.random() * 30;
-        const randX = (Math.random() - 0.5) * 10;
-        const randZ = (Math.random() - 0.5) * 10;
+        const randX = (Math.random() - 0.5) * 8;
+        const randZ = (Math.random() - 0.5) * 8;
         d.body.applyImpulse(new CANNON.Vec3(randX, force, randZ), new CANNON.Vec3(0, 0, 0));
         d.body.angularVelocity.set(Math.random() * 30 - 15, Math.random() * 30 - 15, Math.random() * 30 - 15);
       });
@@ -324,8 +380,17 @@
           const d12Result = Math.floor(Math.random() * 12);
           const chosenAlbum = albums[d8Result];
           const chosenTrackTitle = trackTitles[albumPrefixes[d8Result]][d12Result];
-          scoreText.innerText = `${chosenAlbum.title} — ${chosenTrackTitle}`;
-          loadTrack(chosenAlbum.tracks[d12Result], `Fate chose: ${chosenTrackTitle}`, chosenAlbum.art);
+          const url = chosenAlbum.tracks[d12Result];
+          const art = chosenAlbum.art;
+
+          lastChosenUrl = url;
+          lastChosenTitle = chosenTrackTitle;
+          lastChosenArt = art;
+
+          resultDisplay.innerHTML = `<span style="cursor:pointer; text-decoration:underline;">${chosenAlbum.title} — ${chosenTrackTitle}</span>`;
+          resultDisplay.onclick = () => loadTrack(url, chosenTrackTitle, art);
+
+          loadTrack(url, chosenTrackTitle, art);
           isRolling = false;
           rollBtn.disabled = false;
         }, 300);
@@ -358,7 +423,7 @@
       }
     }
 
-    // Interaction — PERFECT tooltips
+    // Interaction
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -403,10 +468,6 @@
     });
 
     // Player
-    let lastUrl = '';
-    let lastTitle = '';
-    let lastArt = '';
-
     const playerBubble = document.getElementById('player-bubble');
     playerBubble.onclick = () => {
       const panel = document.getElementById('album-panel');
@@ -414,9 +475,6 @@
     };
 
     function loadTrack(url, title, art) {
-      lastUrl = url;
-      lastTitle = title;
-      lastArt = art;
       document.getElementById('album-title').textContent = title;
       document.getElementById('album-art').src = art;
       document.getElementById('player-container').innerHTML = `<iframe width="100%" height="450" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=${url}&color=%235ab&auto_play=true"></iframe>`;
@@ -435,7 +493,7 @@
         const type = hovered.userData.type;
         const url = hovered.userData.url || hovered.userData.album.playlist;
         const title = type === 'fruit' ? hovered.userData.trackTitle : hovered.userData.albumTitle;
-        const art = hovered.userData.album?.art || albums.find(a => a.title === hovered.userData.albumTitle)?.art || '';
+        const art = albums.find(a => a.title === hovered.userData.albumTitle)?.art || '';
         loadTrack(url, title, art);
       }
     }});
@@ -481,7 +539,7 @@
 <body>
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Destiny v0.9</em><br><br>
+  <em>The Circle of Destiny v1.0</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click Stonehenge → roll the Dice of Fate<br>
   Hover chests/fruits → see titles<br>
@@ -507,7 +565,7 @@
     <div class="close-btn">×</div>
     <div id="canvas-container"></div>
     <div class="ui-panel">
-      <div id="result-display">Result: <span id="score-text">-</span></div>
+      <div id="result-display">Roll the dice...</div>
       <button id="roll-btn">ROLL DICE</button>
     </div>
   </div>
