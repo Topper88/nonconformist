@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Destiny v0.8.5</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v0.9</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -139,6 +139,20 @@
     ];
     const fruitColors = [0xff3366, 0x33ff99, 0xffaa00, 0xcc33ff, 0xffff33, 0x33ccff, 0xff6666, 0x66ff33, 0xff33cc, 0x33ff66, 0x66ccff, 0xccff33];
 
+    // Track Titles
+    const trackTitles = {
+      wb: ["Discovery","Connection Found v1","Connection Found v2","Walls to Climb v1","Walls to Climb v2","As We Learn Cycling v1","As We Learn Cycling v2","As We Learn Cycling v3","Forgiving the Necessary Evil v1","Forgiving the Necessary Evil v2","Unfolded Consequences v1","Unfolded Consequences v2"],
+      eb: ["Embrace the Magic","Embrace More Magic","No Matter What v2","No Matter What v1","No Matter What v3","Time Is Here v0.2","Time Is Here v1","Time Is Here v2","Rotten Suggestion","Stand My Ground v0","Stand My Ground v2","Stand My Ground v1"],
+      mb: ["It Has Always Been There","Revelation","Haunting Paradigms v1","Haunting Paradigms v2","Haunting Paradigms v3","Distant Murmur of Tribal Uprisings v1","Distant Murmur of Tribal Uprisings v2","Distant Murmur of Tribal Uprisings v3","Undisclosed Meaning v1","Undisclosed Meaning v2","Undisclosed Meaning v3","Undisclosed Meaning (Extended)"],
+      ob: ["The Future Is Inviting","Intrigued v1","Intrigued v2","Feedforward v2","Feedforward v1.3","Sparks of Ingenuity v1","Sparks of Ingenuity v2","The Future Is Still Inviting v1","The Future Is Still Inviting v2","To Be Continued v1","To Be Continued v2","To Be Continued v3"],
+      tb: ["Hello Mailer-Daemon v2","Hello Mailer-Daemon v1","Crushhour v2","Crushhour v1","Beyond the Moment Lost v1","Beyond the Moment Lost v3","Beyond the Moment Lost v2","Lurking Memories v1","Lurking Memories v2","Exported Whispers v1","Exported Whispers v2","Exported Whispers v3"],
+      rb: ["Premature Farewell v3","Premature Farewell v1","Premature Farewell v2","Holding What Matters v1","Holding What Matters v2","Holding What Matters v3","Holding What Matters v4","Pointing Fingers v1","Pointing Fingers v2","Murky Waters v2","Murky Waters v3","Murky Waters v1"],
+      fb: ["Come Well v1","Come Well v2","Come Well v3","Euphoria v3.1","Euphoria v2","Euphoria v1","Fruity Outcome v2","Fruity Outcome v3","Fruity Outcome v1","Wedding March v2","Wedding March v3","Wedding March v1"],
+      bb: ["Sharp on Time","The Catalyst","Move On v1","Move On v2","For the Financial Alchemists v1","For the Financial Alchemists v2","For the Financial Alchemists v3","Shepherd’s Tale v1","Shepherd’s Tale v3","Shepherd’s Tale v2","Shepherd’s Tale v4","Halloween Special"]
+    };
+
+    const albumPrefixes = ['wb','eb','mb','ob','tb','rb','fb','bb'];
+
     // ALBUMS
     const albums = [
       {playlist: "https://soundcloud.com/musique_residentielle/sets/wisdom-box", tracks: ["https://soundcloud.com/musique_residentielle/wb_01","https://soundcloud.com/musique_residentielle/wb_02","https://soundcloud.com/musique_residentielle/wb_03","https://soundcloud.com/musique_residentielle/wb_04","https://soundcloud.com/musique_residentielle/wb_05","https://soundcloud.com/musique_residentielle/wb_06","https://soundcloud.com/musique_residentielle/wb_07","https://soundcloud.com/musique_residentielle/wb_08","https://soundcloud.com/musique_residentielle/wb_09","https://soundcloud.com/musique_residentielle/wb_10","https://soundcloud.com/musique_residentielle/wb_11","https://soundcloud.com/musique_residentielle/wb_12"], title: "Wisdom Box", art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg"},
@@ -167,6 +181,7 @@
       tree.position.set(x,0,z);
       scene.add(tree);
 
+      const prefix = albumPrefixes[i];
       for(let f=0; f<12; f++){
         const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
         const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
@@ -177,7 +192,7 @@
         fruit.position.set(r * Math.sin(phiF) * Math.cos(thetaF), 17 + (Math.cos(phiF) * r), r * Math.sin(phiF) * Math.sin(thetaF));
         fruit.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
         fruit.scale.setScalar(0.5 + Math.random()*0.3);
-        fruit.userData = {type:'fruit', url: album.tracks[f]};
+        fruit.userData = {type:'fruit', url: album.tracks[f], trackTitle: trackTitles[prefix][f]};
         tree.add(fruit);
       }
 
@@ -202,7 +217,7 @@
 
       chest.position.set(chestX,0,chestZ);
       chest.lookAt(0,0,0);
-      chest.userData = {type:'chest', url: album.playlist, album};
+      chest.userData = {type:'chest', url: album.playlist, albumTitle: album.title};
       scene.add(chest);
     });
 
@@ -307,8 +322,10 @@
         setTimeout(() => {
           const d8Result = Math.floor(Math.random() * 8);
           const d12Result = Math.floor(Math.random() * 12);
-          scoreText.innerText = `${albums[d8Result].title} — Track ${d12Result + 1}`;
-          loadTrack(albums[d8Result].tracks[d12Result], `Fate chose: ${albums[d8Result].title} Track ${d12Result + 1}`, albums[d8Result].art);
+          const chosenAlbum = albums[d8Result];
+          const chosenTrackTitle = trackTitles[albumPrefixes[d8Result]][d12Result];
+          scoreText.innerText = `${chosenAlbum.title} — ${chosenTrackTitle}`;
+          loadTrack(chosenAlbum.tracks[d12Result], `Fate chose: ${chosenTrackTitle}`, chosenAlbum.art);
           isRolling = false;
           rollBtn.disabled = false;
         }, 300);
@@ -341,7 +358,7 @@
       }
     }
 
-    // Interaction
+    // Interaction — PERFECT tooltips
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -353,20 +370,23 @@
       raycaster.setFromCamera(mouse,camera);
       const hits = raycaster.intersectObjects(scene.children,true);
       let found = null;
+      let tooltipText = '';
       for(let h of hits){
         const obj = h.object;
-        const type = obj.userData.type || (obj.parent && obj.parent.userData.type);
-        if(type === 'stonehenge'){
-          tooltip.textContent = 'Click to roll the Dice of Fate';
-          tooltip.style.opacity = 1;
+        if(obj.userData.type === 'stonehenge' || (obj.parent && obj.parent.userData.type === 'stonehenge')){
+          tooltipText = 'Click to roll the Dice of Fate';
           found = stonehenge;
           break;
         }
-        if(obj.userData && obj.userData.type==='fruit'){
-          found = obj; break;
+        if(obj.userData && obj.userData.type === 'fruit'){
+          tooltipText = obj.userData.trackTitle;
+          found = obj;
+          break;
         }
-        if(obj.parent && obj.parent.userData && obj.parent.userData.type==='chest'){
-          found = obj.parent; break;
+        if(obj.parent && obj.parent.userData && obj.parent.userData.type === 'chest'){
+          tooltipText = obj.parent.userData.albumTitle;
+          found = obj.parent;
+          break;
         }
       }
       if(found !== hovered){
@@ -374,6 +394,7 @@
         hovered = found;
         if(hovered){
           hovered.scale.set(1.15,1.15,1.15);
+          tooltip.textContent = tooltipText;
           tooltip.style.left = (e.clientX+15)+'px';
           tooltip.style.top = (e.clientY+15)+'px';
           tooltip.style.opacity = 1;
@@ -413,13 +434,12 @@
       } else {
         const type = hovered.userData.type;
         const url = hovered.userData.url || hovered.userData.album.playlist;
-        const title = type === 'fruit' ? 'Track' : hovered.userData.album.title;
-        const art = hovered.userData.album?.art || '';
+        const title = type === 'fruit' ? hovered.userData.trackTitle : hovered.userData.albumTitle;
+        const art = hovered.userData.album?.art || albums.find(a => a.title === hovered.userData.albumTitle)?.art || '';
         loadTrack(url, title, art);
       }
     }});
 
-    // Close buttons — FIXED for dice modal
     document.querySelectorAll('.close-btn').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();
@@ -461,10 +481,11 @@
 <body>
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Destiny v0.8.5</em><br><br>
+  <em>The Circle of Destiny v0.9</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click Stonehenge → roll the Dice of Fate<br>
-  Click chest/fruit → play<br>
+  Hover chests/fruits → see titles<br>
+  Click to play<br>
   ♪ bubble = toggle player<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
