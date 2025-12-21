@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>п o п c o п f o r m i s t | The Circle of Destiny v1.1</title>
+<title>п o п c o п f o r m i s t | The Circle of Destiny v1.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; }
@@ -26,7 +26,7 @@
   #dice-modal.active { visibility: visible; opacity: 1; }
   .dice-container {
     background: #fdfffc; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    padding: 40px; max-width: 500px; width: 90%; text-align: center;
+    padding: 40px; max-width: 500px; width: 90%; text-align: center; position: relative;
   }
   .dice-container h1 {
     color: #011627; margin: 0 0 30px 0; font-size: 28px;
@@ -54,15 +54,20 @@
     to { opacity: 1; transform: scale(1); }
   }
   #fate-result {
-    margin-top: 30px; font-size: 22px; color: #011627; cursor: pointer;
+    margin-top: 30px; font-size: 22px; color: #011627;
   }
-  #fate-result span { text-decoration: underline; }
+  #fate-result span {
+    text-decoration: underline; cursor: pointer; color: #2ec4b6;
+  }
+  #fate-result span:hover {
+    color: #26a89c;
+  }
 </style>
 <script type="module">
   import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
   window.onload = () => {
-    // Main Scene (same as before)
+    // Main Scene (unchanged — forest, stonehenge, trees, fruits, chests, etc.)
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x0a1a2f, 0.0008);
     const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
@@ -182,7 +187,7 @@
       {playlist: "https://soundcloud.com/musique_residentielle/sets/bonus-box", tracks: ["https://soundcloud.com/musique_residentielle/bb_01","https://soundcloud.com/musique_residentielle/bb_02","https://soundcloud.com/musique_residentielle/bb_03","https://soundcloud.com/musique_residentielle/bb_04","https://soundcloud.com/musique_residentielle/bb_05","https://soundcloud.com/musique_residentielle/bb_06","https://soundcloud.com/musique_residentielle/bb_07","https://soundcloud.com/musique_residentielle/bb_08","https://soundcloud.com/musique_residentielle/bb_09","https://soundcloud.com/musique_residentielle/bb_10","https://soundcloud.com/musique_residentielle/bb_11","https://soundcloud.com/musique_residentielle/bb_12"], title: "Bonus Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg"}
     ];
 
-    // Build Trees, Fruits, Chests (same as before)
+    // Build Trees, Fruits, Chests (unchanged)
     const radiusCircle = 34;
     albums.forEach((album,i)=>{
       const angle = (i/albums.length)*Math.PI*2;
@@ -238,7 +243,7 @@
       scene.add(chest);
     });
 
-    // Background forest (same)
+    // Background forest (unchanged)
     for(let i=0;i<250;i++){
       const a = Math.random()*Math.PI*2;
       const d = 80 + Math.random()*400;
@@ -287,14 +292,21 @@
       lastChosenArt = chosenAlbum.art;
 
       fateResult.innerHTML = `<span>Fate chose: ${chosenAlbum.title} — ${chosenTrackTitle}</span>`;
-      fateResult.onclick = () => loadTrack(lastChosenUrl, lastChosenTitle, lastChosenArt);
+      fateResult.onclick = () => {
+        diceModal.classList.remove('active');
+        gameMode = false;
+        targetRadius = 70;
+        targetPhi = Math.PI / 3.5;
+        loadTrack(lastChosenUrl, lastChosenTitle, lastChosenArt);
+      };
 
+      // Auto open player after roll
       loadTrack(lastChosenUrl, lastChosenTitle, lastChosenArt);
     }
 
     diceRollButton.addEventListener('click', rollDice);
 
-    // Interaction
+    // Interaction (unchanged)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
@@ -408,11 +420,11 @@
 <body>
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Destiny v1.1</em><br><br>
+  <em>The Circle of Destiny v1.2</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click Stonehenge → roll the Dice of Fate<br>
   Hover chests/fruits → see titles<br>
-  Click to play<br>
+  Click fate result → play chosen song<br>
   ♪ bubble = toggle player<br>
   <a href="https://ko-fi.com/nnconformist" target="_blank">Tip if it moves you</a>
 </div>
