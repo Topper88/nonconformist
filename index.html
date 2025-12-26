@@ -67,7 +67,6 @@
   import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
   window.onload = () => {
-    // Main Scene (unchanged)
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x0a1a2f, 0.0008);
     const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
@@ -93,7 +92,7 @@
     ground.position.y = -1;
     scene.add(ground);
 
-    // Stonehenge (unchanged)
+    // Stonehenge
     const stonehenge = new THREE.Group();
     stonehenge.userData.type = 'stonehenge';
     const stoneMat = new THREE.MeshStandardMaterial({color:0x777777, roughness:0.95});
@@ -113,7 +112,7 @@
     stonehenge.add(aura);
     scene.add(stonehenge);
 
-    // Orbit Controls (unchanged)
+    // Orbit Controls
     let radius = 70;
     let theta = 0;
     let phi = Math.PI / 3.5;
@@ -131,14 +130,131 @@
     };
     updateCamera();
 
-    // ... (mouse controls unchanged)
+    renderer.domElement.addEventListener('pointerdown', e => isDragging = true);
+    renderer.domElement.addEventListener('pointermove', e => {
+      if (isDragging && !gameMode) {
+        const deltaX = e.clientX - previousMouse.x;
+        const deltaY = e.clientY - previousMouse.y;
+        theta -= deltaX * 0.005;
+        phi += deltaY * 0.005;
+        phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+        previousMouse = { x: e.clientX, y: e.clientY };
+        updateCamera();
+      }
+    });
+    renderer.domElement.addEventListener('pointerup', () => isDragging = false);
+    renderer.domElement.addEventListener('wheel', e => {
+      radius += e.deltaY * 0.05;
+      radius = Math.max(30, Math.min(150, radius));
+      updateCamera();
+    });
 
-    // FRUIT SHAPES, TRACK TITLES, ALBUMS — unchanged
-    // (all the arrays and albums data remain exactly the same)
+    // FRUIT SHAPES AND COLORS
+    const fruitShapes = [
+      new THREE.SphereGeometry(0.6, 8, 6),
+      new THREE.SphereGeometry(0.7, 10, 8),
+      new THREE.ConeGeometry(0.5, 1.2, 8),
+      new THREE.ConeGeometry(0.4, 1.4, 8),
+      new THREE.BoxGeometry(0.7, 1.1, 0.7),
+      new THREE.TorusGeometry(0.4, 0.15, 6, 12)
+    ];
+    const fruitColors = [0xff3366, 0x33ff99, 0xffaa00, 0xcc33ff, 0xffff33, 0x33ccff, 0xff6666, 0x66ff33, 0xff33cc, 0x33ff66, 0x66ccff, 0xccff33];
 
-    // Build Trees, Fruits, Chests — unchanged
+    // Track Titles
+    const trackTitles = {
+      wb: ["Discovery","Connection Found v1","Connection Found v2","Walls to Climb v1","Walls to Climb v2","As We Learn Cycling v1","As We Learn Cycling v2","As We Learn Cycling v3","Forgiving the Necessary Evil v1","Forgiving the Necessary Evil v2","Unfolded Consequences v1","Unfolded Consequences v2"],
+      eb: ["Embrace the Magic","Embrace More Magic","No Matter What v2","No Matter What v1","No Matter What v3","Time Is Here v0.2","Time Is Here v1","Time Is Here v2","Rotten Suggestion","Stand My Ground v0","Stand My Ground v2","Stand My Ground v1"],
+      mb: ["It Has Always Been There","Revelation","Haunting Paradigms v1","Haunting Paradigms v2","Haunting Paradigms v3","Distant Murmur of Tribal Uprisings v1","Distant Murmur of Tribal Uprisings v2","Distant Murmur of Tribal Uprisings v3","Undisclosed Meaning v1","Undisclosed Meaning v2","Undisclosed Meaning v3","Undisclosed Meaning (Extended)"],
+      ob: ["The Future Is Inviting","Intrigued v1","Intrigued v2","Feedforward v2","Feedforward v1.3","Sparks of Ingenuity v1","Sparks of Ingenuity v2","The Future Is Still Inviting v1","The Future Is Still Inviting v2","To Be Continued v1","To Be Continued v2","To Be Continued v3"],
+      tb: ["Hello Mailer-Daemon v2","Hello Mailer-Daemon v1","Crushhour v2","Crushhour v1","Beyond the Moment Lost v1","Beyond the Moment Lost v3","Beyond the Moment Lost v2","Lurking Memories v1","Lurking Memories v2","Exported Whispers v1","Exported Whispers v2","Exported Whispers v3"],
+      rb: ["Premature Farewell v3","Premature Farewell v1","Premature Farewell v2","Holding What Matters v1","Holding What Matters v2","Holding What Matters v3","Holding What Matters v4","Pointing Fingers v1","Pointing Fingers v2","Murky Waters v2","Murky Waters v3","Murky Waters v1"],
+      fb: ["Come Well v1","Come Well v2","Come Well v3","Euphoria v3.1","Euphoria v2","Euphoria v1","Fruity Outcome v2","Fruity Outcome v3","Fruity Outcome v1","Wedding March v2","Wedding March v3","Wedding March v1"],
+      bb: ["Sharp on Time","The Catalyst","Move On v1","Move On v2","For the Financial Alchemists v1","For the Financial Alchemists v2","For the Financial Alchemists v3","Shepherd’s Tale v1","Shepherd’s Tale v3","Shepherd’s Tale v2","Shepherd’s Tale v4","Halloween Special"]
+    };
 
-    // Background forest — unchanged
+    const albumPrefixes = ['wb','eb','mb','ob','tb','rb','fb','bb'];
+
+    // ALBUMS
+    const albums = [
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/wisdom-box", tracks: ["https://soundcloud.com/musique_residentielle/wb_01","https://soundcloud.com/musique_residentielle/wb_02","https://soundcloud.com/musique_residentielle/wb_03","https://soundcloud.com/musique_residentielle/wb_04","https://soundcloud.com/musique_residentielle/wb_05","https://soundcloud.com/musique_residentielle/wb_06","https://soundcloud.com/musique_residentielle/wb_07","https://soundcloud.com/musique_residentielle/wb_08","https://soundcloud.com/musique_residentielle/wb_09","https://soundcloud.com/musique_residentielle/wb_10","https://soundcloud.com/musique_residentielle/wb_11","https://soundcloud.com/musique_residentielle/wb_12"], title: "Wisdom Box", art: "https://i1.sndcdn.com/artworks-000683927318-7p1r5t-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/energy-box", tracks: ["https://soundcloud.com/musique_residentielle/eb_01","https://soundcloud.com/musique_residentielle/eb_02","https://soundcloud.com/musique_residentielle/eb_03","https://soundcloud.com/musique_residentielle/eb_04","https://soundcloud.com/musique_residentielle/eb_05","https://soundcloud.com/musique_residentielle/eb_06","https://soundcloud.com/musique_residentielle/eb_07","https://soundcloud.com/musique_residentielle/eb_08","https://soundcloud.com/musique_residentielle/eb_09","https://soundcloud.com/musique_residentielle/eb_10","https://soundcloud.com/musique_residentielle/eb_11","https://soundcloud.com/musique_residentielle/eb_12"], title: "Energy Box", art: "https://i1.sndcdn.com/artworks-000683427258-1t6u3w-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/mystery-box", tracks: ["https://soundcloud.com/musique_residentielle/mb_01","https://soundcloud.com/musique_residentielle/mb_02","https://soundcloud.com/musique_residentielle/mb_03","https://soundcloud.com/musique_residentielle/mb_04","https://soundcloud.com/musique_residentielle/mb_05","https://soundcloud.com/musique_residentielle/mb_06","https://soundcloud.com/musique_residentielle/mb_07","https://soundcloud.com/musique_residentielle/mb_08","https://soundcloud.com/musique_residentielle/mb_09","https://soundcloud.com/musique_residentielle/mb_10","https://soundcloud.com/musique_residentielle/mb_11","https://soundcloud.com/musique_residentielle/mb_12"], title: "Mystery Box", art: "https://i1.sndcdn.com/artworks-000683827306-0p2q3s-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/optima-box", tracks: ["https://soundcloud.com/musique_residentielle/ob_01","https://soundcloud.com/musique_residentielle/ob_02","https://soundcloud.com/musique_residentielle/ob_03","https://soundcloud.com/musique_residentielle/ob_04","https://soundcloud.com/musique_residentielle/ob_05","https://soundcloud.com/musique_residentielle/ob_06","https://soundcloud.com/musique_residentielle/ob_07","https://soundcloud.com/musique_residentielle/ob_08","https://soundcloud.com/musique_residentielle/ob_09","https://soundcloud.com/musique_residentielle/ob_10","https://soundcloud.com/musique_residentielle/ob_11","https://soundcloud.com/musique_residentielle/ob_12"], title: "Optima Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/therapy-box", tracks: ["https://soundcloud.com/musique_residentielle/tb_01","https://soundcloud.com/musique_residentielle/tb_02","https://soundcloud.com/musique_residentielle/tb_03","https://soundcloud.com/musique_residentielle/tb_04","https://soundcloud.com/musique_residentielle/tb_05","https://soundcloud.com/musique_residentielle/tb_06","https://soundcloud.com/musique_residentielle/tb_07","https://soundcloud.com/musique_residentielle/tb_08","https://soundcloud.com/musique_residentielle/tb_09","https://soundcloud.com/musique_residentielle/tb_10","https://soundcloud.com/musique_residentielle/tb_11","https://soundcloud.com/musique_residentielle/tb_12"], title: "Therapy Box", art: "https://i1.sndcdn.com/artworks-000683627282-9r4s1u-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/romantic-box", tracks: ["https://soundcloud.com/musique_residentielle/rb_01","https://soundcloud.com/musique_residentielle/rb_02","https://soundcloud.com/musique_residentielle/rb_03","https://soundcloud.com/musique_residentielle/rb_04","https://soundcloud.com/musique_residentielle/rb_05","https://soundcloud.com/musique_residentielle/rb_06","https://soundcloud.com/musique_residentielle/rb_07","https://soundcloud.com/musique_residentielle/rb_08","https://soundcloud.com/musique_residentielle/rb_09","https://soundcloud.com/musique_residentielle/rb_10","https://soundcloud.com/musique_residentielle/rb_11","https://soundcloud.com/musique_residentielle/rb_12"], title: "Romantic Box", art: "https://i1.sndcdn.com/artworks-000683727294-8q3r2t-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/fiesta-box", tracks: ["https://soundcloud.com/musique_residentielle/fb_01","https://soundcloud.com/musique_residentielle/fb_02","https://soundcloud.com/musique_residentielle/fb_03","https://soundcloud.com/musique_residentielle/fb_04","https://soundcloud.com/musique_residentielle/fb_05","https://soundcloud.com/musique_residentielle/fb_06","https://soundcloud.com/musique_residentielle/fb_07","https://soundcloud.com/musique_residentielle/fb_08","https://soundcloud.com/musique_residentielle/fb_09","https://soundcloud.com/musique_residentielle/fb_10","https://soundcloud.com/musique_residentielle/fb_11","https://soundcloud.com/musique_residentielle/fb_12"], title: "Fiesta Box", art: "https://i1.sndcdn.com/artworks-000683527270-0s5t2v-t500x500.jpg"},
+      {playlist: "https://soundcloud.com/musique_residentielle/sets/bonus-box", tracks: ["https://soundcloud.com/musique_residentielle/bb_01","https://soundcloud.com/musique_residentielle/bb_02","https://soundcloud.com/musique_residentielle/bb_03","https://soundcloud.com/musique_residentielle/bb_04","https://soundcloud.com/musique_residentielle/bb_05","https://soundcloud.com/musique_residentielle/bb_06","https://soundcloud.com/musique_residentielle/bb_07","https://soundcloud.com/musique_residentielle/bb_08","https://soundcloud.com/musique_residentielle/bb_09","https://soundcloud.com/musique_residentielle/bb_10","https://soundcloud.com/musique_residentielle/bb_11","https://soundcloud.com/musique_residentielle/bb_12"], title: "Bonus Box", art: "https://i1.sndcdn.com/artworks-000684027330-5v4q3t-t500x500.jpg"}
+    ];
+
+    // Build Trees, Fruits, Chests
+    const radiusCircle = 34;
+    albums.forEach((album,i)=>{
+      const angle = (i/albums.length)*Math.PI*2;
+      const x = Math.cos(angle)*radiusCircle;
+      const z = Math.sin(angle)*radiusCircle;
+
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.6,2.2,17,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
+      trunk.position.y = 8.5;
+      const leaves = new THREE.Mesh(new THREE.SphereGeometry(7.5,10,8), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
+      leaves.position.y = 17;
+      tree.add(trunk,leaves);
+      tree.position.set(x,0,z);
+      scene.add(tree);
+
+      const prefix = albumPrefixes[i];
+      for(let f=0; f<12; f++){
+        const shape = fruitShapes[Math.floor(Math.random()*fruitShapes.length)];
+        const color = fruitColors[Math.floor(Math.random()*fruitColors.length)];
+        const fruit = new THREE.Mesh(shape, new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:0.6}));
+        const thetaF = Math.random()*Math.PI*2;
+        const phiF = Math.acos(2*Math.random() - 1);
+        const r = 7.5;
+        fruit.position.set(r * Math.sin(phiF) * Math.cos(thetaF), 17 + (Math.cos(phiF) * r), r * Math.sin(phiF) * Math.sin(thetaF));
+        fruit.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+        fruit.scale.setScalar(0.5 + Math.random()*0.3);
+        fruit.userData = {type:'fruit', url: album.tracks[f], trackTitle: trackTitles[prefix][f]};
+        tree.add(fruit);
+      }
+
+      const chestX = x - Math.cos(angle)*5;
+      const chestZ = z - Math.sin(angle)*5;
+      const chest = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.BoxGeometry(3.2,2,2.4), new THREE.MeshStandardMaterial({color:0x8B4513}));
+      const lid = new THREE.Mesh(new THREE.BoxGeometry(3.3,0.5,2.5), new THREE.MeshStandardMaterial({color:0xA0522D}));
+      lid.position.y = 1.25;
+      chest.add(body,lid);
+
+      const canvas = document.createElement('canvas'); canvas.width=canvas.height=256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle='#8B0000'; ctx.fillRect(0,0,256,256);
+      ctx.strokeStyle='#FFD700'; ctx.lineWidth=24;
+      ctx.strokeRect(18,18,220,220); ctx.strokeRect(48,48,160,160);
+      ctx.font='bold 146px Arial'; ctx.fillStyle='#FFD700'; ctx.textAlign='center'; ctx.fillText('П',128,182);
+      const tex = new THREE.CanvasTexture(canvas);
+      const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.6), new THREE.MeshStandardMaterial({map:tex, emissive:0xff3366, emissiveIntensity:0.4}));
+      panel.position.set(0,0.6,1.21);
+      chest.add(panel);
+
+      chest.position.set(chestX,0,chestZ);
+      chest.lookAt(0,0,0);
+      chest.userData = {type:'chest', url: album.playlist, albumTitle: album.title};
+      scene.add(chest);
+    });
+
+    // Background forest
+    for(let i=0;i<250;i++){
+      const a = Math.random()*Math.PI*2;
+      const d = 80 + Math.random()*400;
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1,1.6,14,8), new THREE.MeshStandardMaterial({color:0x3d2817}));
+      trunk.position.y = 7;
+      const leaves = new THREE.Mesh(new THREE.SphereGeometry(6,8,6), new THREE.MeshStandardMaterial({color:0x0a2a0a}));
+      leaves.position.y = 14;
+      tree.add(trunk,leaves);
+      tree.position.set(Math.cos(a)*d,0,Math.sin(a)*d);
+      scene.add(tree);
+    }
 
     // Dice Game
     const diceModal = document.getElementById('dice-modal');
@@ -149,7 +265,7 @@
     let lastChosenUrl = '';
     let lastChosenTitle = '';
     let lastChosenArt = '';
-    let autoPlayed = false;  // <<< NEW FLAG
+    let autoPlayed = false;
 
     function rollDice() {
       const result8 = Math.floor(Math.random() * 8) + 1;
@@ -184,15 +300,55 @@
         loadTrack(lastChosenUrl, lastChosenTitle, lastChosenArt);
       };
 
-      autoPlayed = true;  // <<< Mark that we auto-started a track
-
-      // Auto open player after roll
+      autoPlayed = true;
       loadTrack(lastChosenUrl, lastChosenTitle, lastChosenArt);
     }
 
     diceRollButton.addEventListener('click', rollDice);
 
-    // Interaction — unchanged (raycaster, tooltip, etc.)
+    // Interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const tooltip = document.getElementById('tooltip');
+    let hovered = null;
+
+    window.addEventListener('pointermove', e=>{
+      mouse.x = (e.clientX/innerWidth)*2-1;
+      mouse.y = -(e.clientY/innerHeight)*2+1;
+      raycaster.setFromCamera(mouse,camera);
+      const hits = raycaster.intersectObjects(scene.children,true);
+      let found = null;
+      let tooltipText = '';
+      for(let h of hits){
+        const obj = h.object;
+        if(obj.userData.type === 'stonehenge' || (obj.parent && obj.parent.userData.type === 'stonehenge')){
+          tooltipText = 'Click to roll the Dice of Fate';
+          found = stonehenge;
+          break;
+        }
+        if(obj.userData && obj.userData.type === 'fruit'){
+          tooltipText = obj.userData.trackTitle;
+          found = obj;
+          break;
+        }
+        if(obj.parent && obj.parent.userData && obj.parent.userData.type === 'chest'){
+          tooltipText = obj.parent.userData.albumTitle;
+          found = obj.parent;
+          break;
+        }
+      }
+      if(found !== hovered){
+        if(hovered) hovered.scale.set(1,1,1);
+        hovered = found;
+        if(hovered){
+          hovered.scale.set(1.15,1.15,1.15);
+          tooltip.textContent = tooltipText;
+          tooltip.style.left = (e.clientX+15)+'px';
+          tooltip.style.top = (e.clientY+15)+'px';
+          tooltip.style.opacity = 1;
+        } else tooltip.style.opacity = 0;
+      }
+    });
 
     // Player
     const playerBubble = document.getElementById('player-bubble');
@@ -209,30 +365,43 @@
       playerBubble.style.display = 'block';
     }
 
-    // Click handling — unchanged
+    window.addEventListener('click',()=>{ if(hovered){
+      if(hovered.userData.type === 'stonehenge' || (hovered.parent && hovered.parent.userData.type === 'stonehenge')){
+        gameMode = true;
+        targetRadius = 25;
+        targetPhi = Math.PI / 4;
+        diceModal.classList.add('active');
+      } else {
+        const type = hovered.userData.type;
+        const url = hovered.userData.url || (hovered.userData.album && hovered.userData.album.playlist);
+        const title = type === 'fruit' ? hovered.userData.trackTitle : hovered.userData.albumTitle;
+        const art = albums.find(a => a.title === hovered.userData.albumTitle)?.art || '';
+        loadTrack(url, title, art);
+      }
+    }});
 
-    // <<< FIXED CLOSE BUTTON HANDLER >>>
+    // Close buttons
     document.querySelectorAll('.close-btn').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();
-        
-        // Only hide the player panel if it was NOT opened by the dice auto-play
         if (!autoPlayed) {
           document.getElementById('album-panel').style.display = 'none';
         }
-        
         diceModal.classList.remove('active');
         gameMode = false;
         targetRadius = 70;
         targetPhi = Math.PI / 3.5;
-        
-        autoPlayed = false;  // Reset flag
+        autoPlayed = false;
       };
     });
 
-    // Resize — unchanged
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
 
-    // Animation loop — unchanged
+    // Animation
     const clock = new THREE.Clock();
     function animate() {
       requestAnimationFrame(animate);
@@ -253,7 +422,6 @@
 </script>
 </head>
 <body>
-<!-- All HTML body content remains exactly the same -->
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
   <em>The Circle of Destiny v1.2</em><br><br>
