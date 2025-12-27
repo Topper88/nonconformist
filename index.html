@@ -312,35 +312,43 @@
     const tooltip = document.getElementById('tooltip');
     let hovered = null;
 
-    // Use pointerup for reliable taps/clicks on both desktop and mobile/tablet
-renderer.domElement.addEventListener('pointerup', (e) => {
-  // Optional: only handle primary button/touch
-  if (e.button !== 0 && e.button !== undefined) return;
-
-  if (hovered) {
-    if (hovered.userData.type === 'stonehenge' || (hovered.parent && hovered.parent.userData.type === 'stonehenge')) {
-      gameMode = true;
-      targetRadius = 25;
-      targetPhi = Math.PI / 4;
-      diceModal.classList.add('active');
-    } else {
-      const type = hovered.userData.type || (hovered.parent && hovered.parent.userData.type);
-      let url, title, art = '';
-
-      if (type === 'chest') {
-        url = hovered.userData.url || hovered.parent.userData.url;
-        title = hovered.userData.albumTitle || hovered.parent.userData.albumTitle;
-        art = albums.find(a => a.title === title)?.art || '';
-      } else if (type === 'fruit') {
-        url = hovered.userData.url;
-        title = hovered.userData.trackTitle;
-        art = albums.find(a => a.tracks.includes(url))?.art || '';
+    window.addEventListener('pointermove', e=>{
+      mouse.x = (e.clientX/innerWidth)*2-1;
+      mouse.y = -(e.clientY/innerHeight)*2+1;
+      raycaster.setFromCamera(mouse,camera);
+      const hits = raycaster.intersectObjects(scene.children,true);
+      let found = null;
+      let tooltipText = '';
+      for(let h of hits){
+        const obj = h.object;
+        if(obj.userData.type === 'stonehenge' || (obj.parent && obj.parent.userData.type === 'stonehenge')){
+          tooltipText = 'Click to roll the Dice of Fate';
+          found = stonehenge;
+          break;
+        }
+        if(obj.userData && obj.userData.type === 'fruit'){
+          tooltipText = obj.userData.trackTitle;
+          found = obj;
+          break;
+        }
+        if(obj.parent && obj.parent.userData && obj.parent.userData.type === 'chest'){
+          tooltipText = obj.parent.userData.albumTitle;
+          found = obj.parent;
+          break;
+        }
       }
-
-      loadTrack(url, title, art);
-    }
-  }
-});
+      if(found !== hovered){
+        if(hovered) hovered.scale.set(1,1,1);
+        hovered = found;
+        if(hovered){
+          hovered.scale.set(1.15,1.15,1.15);
+          tooltip.textContent = tooltipText;
+          tooltip.style.left = (e.clientX+15)+'px';
+          tooltip.style.top = (e.clientY+15)+'px';
+          tooltip.style.opacity = 1;
+        } else tooltip.style.opacity = 0;
+      }
+    });
 
     // Player
     const playerBubble = document.getElementById('player-bubble');
@@ -416,7 +424,7 @@ renderer.domElement.addEventListener('pointerup', (e) => {
 <body>
 <div id="info">
   <strong>п o п c o п f o r m i s t</strong><br>
-  <em>The Circle of Destiny v1.2</em><br><br>
+  <em>The Circle of Destiny v1.2.3</em><br><br>
   Drag to orbit • Scroll to zoom<br>
   Click Stonehenge → roll the Dice of Fate<br>
   Hover chests/fruits → see titles<br>
